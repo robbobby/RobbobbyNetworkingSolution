@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+# Smart triggers: Only run on PRs and main/develop pushes
+# This prevents excessive CI runs during feature branch development
+# while ensuring code is validated before merge and after merge
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+      - 'docs/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+      - 'docs/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    concurrency:
+      group: ci-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+            **/*.csproj
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test Release
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+
+      - name: Pack Release
+        run: dotnet pack --configuration Release --no-build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/**/*.nupkg
+            **/bin/Release/**/*.snupkg
+            **/TestResults/**/*.trx

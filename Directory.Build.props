@@ -5,7 +5,12 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <WarningsNotAsErrors />
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    
+    <!-- Warning configuration -->
+    <WarningLevel>5</WarningLevel>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     
     <!-- Version information -->
     <VersionPrefix>1.0.0</VersionPrefix>

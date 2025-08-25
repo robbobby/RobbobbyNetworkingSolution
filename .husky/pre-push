@@ -3,26 +3,36 @@
 
 echo "🚀 Running pre-push validation..."
 
-# Run integration tests (skip if no tests available)
 echo "🔗 Running integration tests..."
-if dotnet test --filter "Category=Integration" --verbosity minimal 2>/dev/null; then
+if out="$(dotnet test --filter "Category=Integration" --verbosity minimal 2>&1)"; then
+    echo "$out"
     echo "✅ Integration tests completed successfully!"
 else
-    echo "⚠️  No integration tests found - continuing with validation"
+    echo "$out"
+    if printf '%s' "$out" | grep -qiE 'No test is available'; then
+        echo "⚠️  No integration tests found - continuing with validation"
+    else
+        echo "⚠️  Integration tests failed - continuing (pre-push is non-blocking)"
+    fi
 fi
 
-# Run performance benchmarks (skip if no tests available)
 echo "⚡ Running performance benchmarks..."
-if dotnet test --filter "Category=Benchmark" --verbosity minimal 2>/dev/null; then
+if out="$(dotnet test --filter "Category=Benchmark" --verbosity minimal 2>&1)"; then
+    echo "$out"
     echo "✅ Benchmark tests completed successfully!"
 else
-    echo "⚠️  No benchmark tests found - continuing with validation"
+    echo "$out"
+    if printf '%s' "$out" | grep -qiE 'No test is available'; then
+        echo "⚠️  No benchmark tests found - continuing with validation"
+    else
+        echo "⚠️  Benchmark tests failed - continuing (pre-push is non-blocking)"
+    fi
 fi
 
 echo "🔨 Building solution in Release mode..."
 dotnet build --configuration Release
 
 echo "📦 Validating package builds..."
-dotnet pack --configuration Release --no-build --verbosity minimal
+dotnet pack --configuration Release --no-build
 
 echo "✅ Pre-push validation completed successfully!"

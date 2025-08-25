@@ -75,6 +75,11 @@ csharp_style_inlined_variable_declaration = true:suggestion
 # xUnit analyzer configuration - prevent auto-fixing of test class visibility
 dotnet_diagnostic.xUnit1000.severity = warning
 dotnet_diagnostic.xUnit1000.auto_fix = false
+dotnet_diagnostic.xUnit1000.auto_fix_severity = none
+
+# Disable all xUnit auto-fixing
+dotnet_diagnostic.xUnit*.auto_fix = false
+dotnet_diagnostic.xUnit*.auto_fix_severity = none
 
 # Project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]

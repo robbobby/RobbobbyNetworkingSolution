@@ -34,11 +34,12 @@ jobs:
           repository: ${{ github.repository }}
 
       - name: Run Benchmarks
+        working-directory: Benchmarks.Tests
         run: |
           echo "🚀 Starting benchmark execution..."
           
           # Run benchmarks using the test runner
-          dotnet test Benchmarks.Tests --configuration Release --filter "Category=Benchmark" --logger "console;verbosity=detailed"
+          dotnet test --configuration Release --filter "Category=Benchmark" --logger "console;verbosity=detailed"
           
           echo "✅ Benchmark execution completed"
 

@@ -16,19 +16,6 @@ else
     fi
 fi
 
-echo "⚡ Running performance benchmarks..."
-if out="$(cd Benchmarks.Tests && dotnet test --configuration Release --filter "Category=Benchmark" --verbosity minimal 2>&1)"; then
-    echo "$out"
-    echo "✅ Benchmark tests completed successfully!"
-else
-    echo "$out"
-    if printf '%s' "$out" | grep -qiE 'No test is available'; then
-        echo "⚠️  No benchmark tests found - continuing with validation"
-    else
-        echo "⚠️  Benchmark tests failed - continuing (pre-push is non-blocking)"
-    fi
-fi
-
 echo "🔨 Building solution in Release mode..."
 dotnet build --configuration Release
 

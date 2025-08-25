@@ -9,7 +9,7 @@ namespace Benchmarks.Tests
     public class BasicBenchmarks
     {
         private readonly Random _random = new Random(42); // Fixed seed for consistent results
-        
+
         [Benchmark]
         public void EmptyBenchmark()
         {
@@ -49,7 +49,7 @@ namespace Benchmarks.Tests
             // Bridge test that actually runs the benchmarks
             // This makes the benchmarks discoverable by dotnet test
             var summary = BenchmarkRunner.Run<BasicBenchmarks>();
-            
+
             // Basic validation that benchmarks completed
             Assert.NotNull(summary);
             Assert.True(summary.Reports.Length > 0, "No benchmark reports generated");

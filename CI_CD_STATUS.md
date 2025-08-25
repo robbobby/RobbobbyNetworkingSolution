@@ -12,13 +12,14 @@ This document tracks the implementation status of our CI/CD pipeline for the Ser
 - **Triggers**: `pull_request` to main/develop, `push` to main/develop (with smart exclusions)
 - **Environment**: Ubuntu latest with .NET 9.0
 - **Status**: ✅ **FULLY FUNCTIONAL, OPTIMIZED & PRODUCTION-READY**
+- **Pipeline Version**: **2.1** (Latest optimizations applied)
 
 **Pipeline Steps:**
 1. **Checkout** - Pulls latest code
-2. **Setup .NET** - Installs .NET 9.0 SDK with NuGet caching
+2. **Setup .NET** - Installs .NET 9.0 SDK with advanced NuGet caching
 3. **Restore** - Downloads NuGet dependencies
-4. **Build** - Compiles all projects in Release mode
-5. **Test** - Runs all unit tests (no rebuild, with TRX logging)
+4. **Build** - Compiles all projects in Release mode (no double restore)
+5. **Test** - Runs all unit tests (no rebuild, with TRX logging, centralized results)
 6. **Pack** - Generates NuGet packages
 7. **Upload Artifacts** - Stores optimized build outputs
 
@@ -35,21 +36,24 @@ This document tracks the implementation status of our CI/CD pipeline for the Ser
 - ✅ **Security hardening** - Least-privilege permissions
 - ✅ **Concurrency control** - Cancels superseded runs
 
-**Advanced Optimizations:**
-- ✅ **NuGet Caching**: 30-60s faster dependency restores
+**Advanced Optimizations (v2.1):**
+- ✅ **NuGet Caching**: Advanced caching with dependency path detection
 - ✅ **No-Rebuild Tests**: Tests use existing build artifacts
 - ✅ **TRX Logging**: Better test diagnostics and reporting
 - ✅ **Smart Artifacts**: Only upload packages and test logs
 - ✅ **Concurrency Control**: Cancel outdated CI runs automatically
 - ✅ **Security**: Minimal required permissions (contents: read)
-- ✅ **Documentation Exclusions**: Skip CI for docs-only changes
+- ✅ **Documentation Exclusions**: Skip CI for docs-only changes (PRs + pushes)
+- ✅ **Eliminated Double Restore**: Build step uses --no-restore
+- ✅ **Deterministic Test Results**: Centralized ./TestResults directory
+- ✅ **Improved Cache Hit Rates**: Cache keys off project files and lock files
 
-**Smart Trigger Strategy:**
-- ✅ **Pull Requests**: Always trigger CI (code review validation)
-- ✅ **Main/Develop Pushes**: Trigger CI (post-merge validation)
+**Smart Trigger Strategy (Enhanced):**
+- ✅ **Pull Requests**: Always trigger CI (code review validation) - EXCEPT docs-only
+- ✅ **Main/Develop Pushes**: Trigger CI (post-merge validation) - EXCEPT docs-only
 - ✅ **Feature Branch Pushes**: No CI (prevents excessive runs)
-- ✅ **Documentation Changes**: Skip CI (docs, .md, .txt files)
-- ✅ **Efficiency**: Reduces CI costs and development friction
+- ✅ **Documentation Changes**: Skip CI for both PRs and pushes (docs, .md, .txt files)
+- ✅ **Efficiency**: Reduces CI costs and development friction significantly
 
 **Local Validation:**
 - ✅ All commands tested locally
@@ -314,7 +318,7 @@ dotnet pack --configuration Release --no-build
 
 | Phase | Task | Status | Completion |
 |-------|------|---------|------------|
-| 1 | GitHub Actions CI/CD | ✅ **COMPLETE & ADVANCED OPTIMIZED** | 100% |
+| 1 | GitHub Actions CI/CD | ✅ **COMPLETE & ADVANCED OPTIMIZED v2.1** | 100% |
 | 2 | Code Coverage | 🔄 **READY** | 0% |
 | 3 | Benchmark Integration | ⏳ **BLOCKED** | 0% |
 | 4 | Core Interfaces | ⏳ **BLOCKED** | 0% |
@@ -328,27 +332,32 @@ dotnet pack --configuration Release --no-build
 
 ## Recent Optimizations
 
-### **Advanced CI Optimizations** ✅ **COMPLETED**
-- **NuGet Caching**: Added `cache: true` for 30-60s faster restores
+### **Advanced CI Optimizations v2.1** ✅ **COMPLETED**
+- **NuGet Caching**: Advanced caching with dependency path detection
 - **Test Performance**: Added `--no-build` to prevent test rebuilding
 - **Test Diagnostics**: Added TRX logging for better test reporting
 - **Artifact Optimization**: Scope to packages and test logs only
 - **Security Hardening**: Added `permissions: contents: read`
 - **Concurrency Control**: Cancel superseded CI runs automatically
-- **Smart Exclusions**: Skip CI for documentation-only changes
-- **Performance**: Overall CI pipeline is now production-ready
+- **Smart Exclusions**: Skip CI for documentation-only changes (PRs + pushes)
+- **Eliminated Double Restore**: Build step uses `--no-restore`
+- **Deterministic Test Results**: Centralized `./TestResults` directory
+- **Improved Cache Hit Rates**: Cache keys off project files and lock files
+- **Performance**: Overall CI pipeline is now production-ready and highly optimized
 
 ### **Workflow Trigger Optimization** ✅ **COMPLETED**
 - **Before**: CI ran on every push and pull request (excessive)
 - **After**: CI only runs on PRs and main/develop pushes (efficient)
+- **Enhanced**: Both PRs and pushes now exclude documentation-only changes
 - **Benefits**: 
   - Reduced CI costs and execution time
   - Less development friction
   - Maintained quality gates where needed
   - Better resource utilization
+  - Consistent behavior across all trigger types
 
 ---
 
 *Last Updated: $(Get-Date)*
-*Pipeline Version: 2.0*
-*Status: PHASE 1 COMPLETE & ADVANCED OPTIMIZED - READY FOR PHASE 2*
+*Pipeline Version: 2.1*
+*Status: PHASE 1 COMPLETE & ADVANCED OPTIMIZED v2.1 - READY FOR PHASE 2*

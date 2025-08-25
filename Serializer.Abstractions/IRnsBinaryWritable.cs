@@ -5,7 +5,7 @@ namespace Serializer.Abstractions
     /// <summary>
     /// Interface for types that can write themselves to a binary buffer.
     /// </summary>
-    public interface IBinaryWritable
+    public interface IRnsBinaryWritable
     {
         /// <summary>
         /// Writes the current instance to the specified buffer.

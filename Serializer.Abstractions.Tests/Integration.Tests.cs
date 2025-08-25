@@ -12,9 +12,9 @@ namespace Serializer.Abstractions.Tests
             var packet = new TestFullPacket();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
-            Assert.IsAssignableFrom<IPacket<int>>(packet);
-            Assert.IsAssignableFrom<IBinaryWritable>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
+            Assert.IsAssignableFrom<IRnsBinaryWritable>(packet);
             Assert.Equal(123, packet.Id);
             Assert.Equal(16, packet.GetSerializedSize());
         }
@@ -43,8 +43,8 @@ namespace Serializer.Abstractions.Tests
             var packet2 = new TestPacketWithIntId(99);
 
             // Assert
-            Assert.IsAssignableFrom<IPacket<int>>(packet1);
-            Assert.IsAssignableFrom<IPacket<int>>(packet2);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet1);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet2);
             Assert.Equal(42, packet1.Id);
             Assert.Equal(99, packet2.Id);
         }
@@ -53,18 +53,18 @@ namespace Serializer.Abstractions.Tests
         public void AttributeCanBeAppliedToComplexInterfaceImplementation()
         {
             // Arrange & Act
-            var attributes = typeof(TestFullPacket).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestFullPacket).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
         }
 
         #region Test Implementations
 
         // Full implementation combining all interfaces
-        [BinarySerializable]
-        private sealed class TestFullPacket : IPacket<int>, IBinaryWritable
+        [RnsSerializable]
+        private sealed class TestFullPacket : IRnsPacket<int>, IRnsBinaryWritable
         {
             public int Id => 123;
 
@@ -87,7 +87,7 @@ namespace Serializer.Abstractions.Tests
         }
 
         // Multiple packets with same ID type
-        private sealed class TestPacketWithIntId : IPacket<int>
+        private sealed class TestPacketWithIntId : IRnsPacket<int>
         {
             public int Id { get; }
 

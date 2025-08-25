@@ -7,13 +7,13 @@ namespace Serializer.Abstractions.Tests
     public sealed class IBinaryWritableTests
     {
         [Fact]
-        public void IBinaryWritableCanBeImplemented()
+        public void IRnsBinaryWritableCanBeImplemented()
         {
             // Arrange & Act
             var writable = new TestBinaryWritable();
 
             // Assert
-            Assert.IsAssignableFrom<IBinaryWritable>(writable);
+            Assert.IsAssignableFrom<IRnsBinaryWritable>(writable);
             Assert.Equal(8, writable.GetSerializedSize());
         }
 
@@ -91,8 +91,8 @@ namespace Serializer.Abstractions.Tests
 
         #region Test Implementations
 
-        // IBinaryWritable implementation
-        private sealed class TestBinaryWritable : IBinaryWritable
+        // IRnsBinaryWritable implementation
+        private sealed class TestBinaryWritable : IRnsBinaryWritable
         {
             public int Write(Span<byte> destination)
             {

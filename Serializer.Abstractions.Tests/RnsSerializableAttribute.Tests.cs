@@ -9,108 +9,108 @@ namespace Serializer.Abstractions.Tests
         public void AttributeCanBeAppliedToClass()
         {
             // Arrange & Act
-            var attributes = typeof(TestSerializableClass).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestSerializableClass).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
         }
 
         [Fact]
         public void AttributeCanBeAppliedToStruct()
         {
             // Arrange & Act
-            var attributes = typeof(TestSerializableStruct).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestSerializableStruct).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
         }
 
         [Fact]
         public void AttributeCanBeAppliedToSealedClass()
         {
             // Arrange & Act
-            var attributes = typeof(TestSerializableSealedClass).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestSerializableSealedClass).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
         }
 
         [Fact]
-        public void AttributeCanBeAppliedToClassImplementingIPacket()
+        public void AttributeCanBeAppliedToClassImplementingIRnsPacket()
         {
             // Arrange & Act
-            var attributes = typeof(TestSerializablePacket).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestSerializablePacket).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
-            Assert.IsAssignableFrom<IPacket>(new TestSerializablePacket());
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
+            Assert.IsAssignableFrom<IRnsPacket>(new TestSerializablePacket());
         }
 
         [Fact]
         public void AttributeCanBeAppliedToClassImplementingMultipleInterfaces()
         {
             // Arrange & Act
-            var attributes = typeof(TestFullPacket).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestFullPacket).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
-            Assert.IsAssignableFrom<IPacket>(new TestFullPacket());
-            Assert.IsAssignableFrom<IPacket<int>>(new TestFullPacket());
-            Assert.IsAssignableFrom<IBinaryWritable>(new TestFullPacket());
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
+            Assert.IsAssignableFrom<IRnsPacket>(new TestFullPacket());
+            Assert.IsAssignableFrom<IRnsPacket<int>>(new TestFullPacket());
+            Assert.IsAssignableFrom<IRnsBinaryWritable>(new TestFullPacket());
         }
 
         [Fact]
         public void AttributeCanBeAppliedToEmptyClass()
         {
             // Arrange & Act
-            var attributes = typeof(TestEmptySerializableClass).GetCustomAttributes(typeof(BinarySerializableAttribute), false);
+            var attributes = typeof(TestEmptySerializableClass).GetCustomAttributes(typeof(RnsSerializableAttribute), false);
 
             // Assert
             Assert.Single(attributes);
-            Assert.IsType<BinarySerializableAttribute>(attributes[0]);
+            Assert.IsType<RnsSerializableAttribute>(attributes[0]);
         }
 
         #region Test Implementations
 
-        // BinarySerializableAttribute test classes
-        [BinarySerializable]
+        // RnsSerializableAttribute test classes
+        [RnsSerializable]
         private sealed class TestSerializableClass
         {
             // Test class with attribute
         }
 
-        [BinarySerializable]
+        [RnsSerializable]
         private struct TestSerializableStruct
         {
             // Test struct with attribute
         }
 
-        [BinarySerializable]
+        [RnsSerializable]
         private sealed class TestSerializableSealedClass
         {
             // Test sealed class with attribute
         }
 
-        [BinarySerializable]
-        private sealed class TestSerializablePacket : IPacket
+        [RnsSerializable]
+        private sealed class TestSerializablePacket : IRnsPacket
         {
-            // Test class with attribute implementing IPacket
+            // Test class with attribute implementing IRnsPacket
         }
 
-        [BinarySerializable]
+        [RnsSerializable]
         private sealed class TestEmptySerializableClass
         {
             // Empty class with attribute
         }
 
         // Full implementation combining all interfaces
-        [BinarySerializable]
-        private sealed class TestFullPacket : IPacket<int>, IBinaryWritable
+        [RnsSerializable]
+        private sealed class TestFullPacket : IRnsPacket<int>, IRnsBinaryWritable
         {
             public int Id => 123;
 

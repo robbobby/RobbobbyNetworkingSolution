@@ -7,7 +7,7 @@ namespace Serializer.Abstractions
     /// All packet types should implement this interface.
     /// </summary>
     [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This is intentionally a marker interface for packet identification")]
-    public interface IPacket
+    public interface IRnsPacket
     {
         // Marker interface - no members required
     }

@@ -7,80 +7,80 @@ namespace Serializer.Abstractions.Tests
     public sealed class IPacketTIdTests
     {
         [Fact]
-        public void IPacketTIdCanBeImplementedWithIntId()
+        public void IRnsPacketTIdCanBeImplementedWithIntId()
         {
             // Arrange & Act
             var packet = new TestPacketWithIntId();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
-            Assert.IsAssignableFrom<IPacket<int>>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
             Assert.Equal(42, packet.Id);
         }
 
         [Fact]
-        public void IPacketTIdCanBeImplementedWithByteId()
+        public void IRnsPacketTIdCanBeImplementedWithByteId()
         {
             // Arrange & Act
             var packet = new TestPacketWithByteId();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
-            Assert.IsAssignableFrom<IPacket<byte>>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<byte>>(packet);
             Assert.Equal(255, packet.Id);
         }
 
         [Fact]
-        public void IPacketTIdCanBeImplementedWithGuidId()
+        public void IRnsPacketTIdCanBeImplementedWithGuidId()
         {
             // Arrange & Act
             var expectedId = Guid.NewGuid();
             var packet = new TestPacketWithGuidId(expectedId);
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
-            Assert.IsAssignableFrom<IPacket<Guid>>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<Guid>>(packet);
             Assert.Equal(expectedId, packet.Id);
         }
 
         [Fact]
-        public void IPacketTIdCanBeImplementedWithShortId()
+        public void IRnsPacketTIdCanBeImplementedWithShortId()
         {
             // Arrange & Act
             var packet = new TestPacketWithShortId();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
-            Assert.IsAssignableFrom<IPacket<short>>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<short>>(packet);
             Assert.Equal(12345, packet.Id);
         }
 
         [Fact]
-        public void IPacketTIdInheritsFromIPacket()
+        public void IRnsPacketTIdInheritsFromIRnsPacket()
         {
             // Arrange
             var packet = new TestPacketWithIntId();
 
             // Assert
-            // This test verifies that IPacket<TId> properly extends IPacket
-            Assert.IsAssignableFrom<IPacket>(packet);
-            Assert.IsAssignableFrom<IPacket<int>>(packet);
+            // This test verifies that IRnsPacket<TId> properly extends IRnsPacket
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
         }
 
         #region Test Implementations
 
-        // IPacket<TId> implementations with different ID types
-        private sealed class TestPacketWithIntId : IPacket<int>
+        // IRnsPacket<TId> implementations with different ID types
+        private sealed class TestPacketWithIntId : IRnsPacket<int>
         {
             public int Id => 42;
         }
 
-        private sealed class TestPacketWithByteId : IPacket<byte>
+        private sealed class TestPacketWithByteId : IRnsPacket<byte>
         {
             public byte Id => 255;
         }
 
-        private sealed class TestPacketWithGuidId : IPacket<Guid>
+        private sealed class TestPacketWithGuidId : IRnsPacket<Guid>
         {
             public Guid Id { get; }
 
@@ -90,7 +90,7 @@ namespace Serializer.Abstractions.Tests
             }
         }
 
-        private sealed class TestPacketWithShortId : IPacket<short>
+        private sealed class TestPacketWithShortId : IRnsPacket<short>
         {
             public short Id => 12345;
         }

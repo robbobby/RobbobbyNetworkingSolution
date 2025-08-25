@@ -6,49 +6,49 @@ namespace Serializer.Abstractions.Tests
     public sealed class IPacketTests
     {
         [Fact]
-        public void IPacketCanBeImplementedByClass()
+        public void IRnsPacketCanBeImplementedByClass()
         {
             // Arrange & Act
             var packet = new TestPacket();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
         }
 
         [Fact]
-        public void IPacketCanBeImplementedByStruct()
+        public void IRnsPacketCanBeImplementedByStruct()
         {
             // Arrange & Act
             var packet = new TestPacketStruct();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
         }
 
         [Fact]
-        public void IPacketCanBeImplementedBySealedClass()
+        public void IRnsPacketCanBeImplementedBySealedClass()
         {
             // Arrange & Act
             var packet = new TestSealedPacket();
 
             // Assert
-            Assert.IsAssignableFrom<IPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket>(packet);
         }
 
         #region Test Implementations
 
-        // Basic IPacket implementations
-        private sealed class TestPacket : IPacket
+        // Basic IRnsPacket implementations
+        private sealed class TestPacket : IRnsPacket
         {
             // Marker interface implementation - no members required
         }
 
-        private struct TestPacketStruct : IPacket
+        private struct TestPacketStruct : IRnsPacket
         {
             // Marker interface implementation - no members required
         }
 
-        private sealed class TestSealedPacket : IPacket
+        private sealed class TestSealedPacket : IRnsPacket
         {
             // Sealed class implementation - no members required
         }

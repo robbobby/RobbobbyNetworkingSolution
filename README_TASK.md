@@ -36,7 +36,7 @@
   * [x] Pack NuGet artifacts.
   * [x] Smart triggers and advanced optimizations.
   * [x] Publish on tags (manual approval required).
-* [ ] Setup code coverage (Coverlet + ReportGenerator).
+* [x] Setup code coverage (Coverlet + ReportGenerator).
 * [ ] Setup benchmark job (optional artifact upload).
 
 ---

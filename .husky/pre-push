@@ -17,7 +17,7 @@ else
 fi
 
 echo "⚡ Running performance benchmarks..."
-if out="$(dotnet test --filter "Category=Benchmark" --verbosity minimal 2>&1)"; then
+if out="$(cd Benchmarks.Tests && dotnet test --configuration Release --filter "Category=Benchmark" --verbosity minimal 2>&1)"; then
     echo "$out"
     echo "✅ Benchmark tests completed successfully!"
 else

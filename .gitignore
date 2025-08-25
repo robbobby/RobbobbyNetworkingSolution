@@ -24,11 +24,31 @@ x64/
 x86/
 build/
 bld/
-[Bb]in/º
+[Bb]in/
 [Oo]bj/
 msbuild.log
 msbuild.err
 msbuild.wrn
+
+# Test results and coverage
+TestResults/
+**/TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+**/coverage/
+*.opencover.xml
+
+# Benchmark results
+BenchmarkDotNet.Artifacts/
+**/BenchmarkDotNet.Artifacts/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+**/bin/**/*.nupkg
+**/bin/**/*.snupkg
 
 # Visual Studio 2015
 .vs/

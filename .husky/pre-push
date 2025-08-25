@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push validation..."
+
+echo "🔗 Running integration tests..."
+dotnet test --filter Category=Integration --verbosity minimal
+
+echo "⚡ Running performance benchmarks..."
+dotnet test --filter Category=Benchmark --verbosity minimal
+
+echo "🔨 Building solution in Release mode..."
+dotnet build --configuration Release
+
+echo "📦 Validating package builds..."
+dotnet pack --configuration Release --no-build --verbosity minimal
+
+echo "✅ Pre-push validation completed successfully!"

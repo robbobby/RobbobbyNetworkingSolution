@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Format C# files
+echo "📝 Formatting C# files..."
+dotnet format
+
+# Build the solution
+echo "🔨 Building solution..."
+dotnet build
+
+# Run unit tests
+echo "🧪 Running unit tests..."
+dotnet test --filter Category=Unit --verbosity minimal
+
+echo "✅ Pre-commit checks completed successfully!"

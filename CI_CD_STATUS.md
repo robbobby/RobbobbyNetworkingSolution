@@ -83,6 +83,7 @@ This document tracks the implementation status of our CI/CD pipeline for the Ser
 - ✅ **Non-blocking**: Doesn't block main CI pipeline
 - ✅ **Performance Metrics**: Memory allocation, statistical analysis, multiple output formats
 - ✅ **Local Development**: Works with `dotnet test --filter "Category=Benchmark"`
+- ✅ **Smart Execution**: Only runs in CI, not in pre-push hooks (performance optimization)
 
 **Benchmark Results:**
 - ✅ **EmptyBenchmark**: ~2.2 ns (baseline performance)
@@ -90,6 +91,12 @@ This document tracks the implementation status of our CI/CD pipeline for the Ser
 - ✅ **ArrayAllocationBenchmark**: ~9.2 μs (array performance testing)
 - ✅ **Output Formats**: CSV, HTML, GitHub Markdown
 - ✅ **Artifact Location**: `BenchmarkDotNet.Artifacts/` directory
+
+**Performance Considerations:**
+- ⚠️ **Execution Time**: Benchmarks take ~65 seconds to complete
+- ⚠️ **Pre-push Exclusion**: Benchmarks are not run in pre-push hooks to maintain fast development workflow
+- ✅ **CI Integration**: Benchmarks run only in CI pipeline where execution time is acceptable
+- ✅ **Local Development**: Developers can run benchmarks manually when needed
 
 ---
 

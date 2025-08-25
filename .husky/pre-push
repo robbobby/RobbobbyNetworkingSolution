@@ -5,7 +5,7 @@ echo "🚀 Running pre-push validation..."
 
 # Run integration tests (skip if no tests available)
 echo "🔗 Running integration tests..."
-if dotnet test --filter Category=Integration --verbosity minimal 2>/dev/null; then
+if dotnet test --filter "Category=Integration" --verbosity minimal 2>/dev/null; then
     echo "✅ Integration tests completed successfully!"
 else
     echo "⚠️  No integration tests found - continuing with validation"
@@ -13,7 +13,7 @@ fi
 
 # Run performance benchmarks (skip if no tests available)
 echo "⚡ Running performance benchmarks..."
-if dotnet test --filter Category=Benchmark --verbosity minimal 2>/dev/null; then
+if dotnet test --filter "Category=Benchmark" --verbosity minimal 2>/dev/null; then
     echo "✅ Benchmark tests completed successfully!"
 else
     echo "⚠️  No benchmark tests found - continuing with validation"

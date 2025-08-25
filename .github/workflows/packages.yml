@@ -1,0 +1,64 @@
+name: NuGet Packages
+# Run package generation after successful CI build
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types: [completed]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  package-generation:
+    # Only run if CI workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+            **/*.csproj
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Generate NuGet Packages
+        run: dotnet pack --configuration Release --no-build
+
+      - name: Validate Package Structure
+        run: |
+          echo "🔍 Validating NuGet package structure..."
+          
+          # Check if packages were generated
+          package_count=$(find . -name "*.nupkg" | wc -l)
+          symbol_count=$(find . -name "*.snupkg" | wc -l)
+          
+          echo "📦 Found $package_count NuGet packages (.nupkg)"
+          echo "🔗 Found $symbol_count symbol packages (.snupkg)"
+          
+          if [ $package_count -eq 0 ]; then
+              echo "❌ No NuGet packages generated"
+              exit 1
+          fi
+          
+          echo "✅ Package generation successful"
+
+      - name: Upload Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: |
+            **/bin/Release/**/*.nupkg
+            **/bin/Release/**/*.snupkg
+          if-no-files-found: ignore

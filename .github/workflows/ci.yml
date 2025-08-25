@@ -11,6 +11,10 @@ on:
       - 'docs/**'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+      - 'docs/**'
 
 permissions:
   contents: read
@@ -29,15 +33,19 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+          cache: true
+          cache-dependency-path: |
+            **/packages.lock.json
+            **/*.csproj
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build Release
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration Release --no-restore
 
       - name: Test Release
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx"
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
 
       - name: Pack Release
         run: dotnet pack --configuration Release --no-build

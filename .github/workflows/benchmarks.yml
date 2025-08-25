@@ -1,0 +1,52 @@
+name: Benchmarks
+# Benchmark workflow that runs after successful tests
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  benchmarks:
+    # Only run if test workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Run Benchmarks
+        run: |
+          echo "🚀 Starting benchmark execution..."
+          
+          # Run benchmarks using the test runner
+          dotnet test Benchmarks.Tests --configuration Release --filter "Category=Benchmark" --logger "console;verbosity=detailed"
+          
+          echo "✅ Benchmark execution completed"
+
+      - name: Upload Benchmark Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            Benchmarks.Tests/BenchmarkDotNet.Artifacts/
+          if-no-files-found: ignore

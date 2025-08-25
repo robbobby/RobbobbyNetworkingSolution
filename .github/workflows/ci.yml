@@ -1,0 +1,37 @@
+name: CI/CD Pipeline
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        framework: [net9.0, netstandard2.1]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build
+        run: dotnet build --configuration Release --framework ${{ matrix.framework }}
+        
+      - name: Test
+        run: dotnet test --configuration Release --framework ${{ matrix.framework }}
+        
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.framework }}
+          path: |
+            **/bin/Release/
+            **/obj/Release/

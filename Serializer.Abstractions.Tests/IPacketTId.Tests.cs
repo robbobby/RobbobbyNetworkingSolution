@@ -4,7 +4,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    internal sealed class IPacketTIdTests
+    public sealed class IPacketTIdTests
     {
         [Fact]
         public void IPacketTIdCanBeImplementedWithIntId()

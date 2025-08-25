@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <!-- Disable CA1515 for test projects since test classes need to be public -->
-        <NoWarn>CA1515</NoWarn>
+        <NoWarn>$(NoWarn);CA1515</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

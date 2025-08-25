@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   test:
@@ -28,9 +29,12 @@ jobs:
         with:
           name: build-artifacts
           path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
 
       - name: Run Tests
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+        run: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4

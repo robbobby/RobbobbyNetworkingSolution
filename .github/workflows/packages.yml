@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   packages:
@@ -28,9 +29,12 @@ jobs:
         with:
           name: build-artifacts
           path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
 
       - name: Generate NuGet Packages
-        run: dotnet pack --configuration Release --no-build
+        run: dotnet pack --configuration Release
 
       - name: Validate Package Structure
         run: |

@@ -28,9 +28,12 @@ jobs:
         with:
           name: build-artifacts
           path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
 
       - name: Run Tests with Coverage
-        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+        run: dotnet test --configuration Release --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
 
       - name: Check Coverage Threshold
         run: |
@@ -73,8 +76,8 @@ jobs:
                   
           except Exception as e:
               print(f'❌ Error parsing coverage: {e}')
-              print('💡 Coverage threshold check failed - continuing with build')
-              sys.exit(0)
+              print('💡 Coverage threshold check failed due to an unexpected error')
+              sys.exit(1)
           "
 
       - name: Upload Coverage Reports

@@ -1,5 +1,12 @@
 name: CI/CD Pipeline
-on: [push, pull_request]
+# Smart triggers: Only run on PRs and main/develop pushes
+# This prevents excessive CI runs during feature branch development
+# while ensuring code is validated before merge and after merge
+on: 
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
 
 jobs:
   build-and-test:

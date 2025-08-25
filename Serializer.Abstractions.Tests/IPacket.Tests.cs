@@ -3,7 +3,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    internal sealed class IPacketTests
+    public sealed class IPacketTests
     {
         [Fact]
         public void IPacketCanBeImplementedByClass()

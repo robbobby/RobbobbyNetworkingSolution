@@ -3,7 +3,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    internal sealed class BinarySerializableAttributeTests
+    public sealed class BinarySerializableAttributeTests
     {
         [Fact]
         public void AttributeCanBeAppliedToClass()

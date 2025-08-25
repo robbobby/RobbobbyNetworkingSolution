@@ -4,7 +4,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    internal sealed class IBinaryWritableTests
+    public sealed class IBinaryWritableTests
     {
         [Fact]
         public void IBinaryWritableCanBeImplemented()

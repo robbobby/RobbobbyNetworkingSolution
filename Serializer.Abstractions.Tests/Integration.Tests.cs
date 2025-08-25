@@ -3,7 +3,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    internal sealed class IntegrationTests
+    public sealed class IntegrationTests
     {
         [Fact]
         public void AllInterfacesCanBeImplementedTogether()

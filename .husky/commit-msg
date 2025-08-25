@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "📝 Commit message validation completed!"
+echo "💡 Tip: Use conventional commit format: type(scope): description"
+echo "   Examples: feat(serializer): add new packet type"
+echo "             fix(transport): resolve connection timeout issue"
+echo "             docs(api): update README with examples"

@@ -1,0 +1,37 @@
+<Project>
+  <PropertyGroup>
+    <!-- Central package version management - temporarily disabled to avoid conflicts -->
+    <!-- <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally> -->
+  </PropertyGroup>
+  
+  <!-- Package versions are defined in individual project files for now -->
+  <!-- This file can be enabled once all projects are updated to use central version management -->
+  
+  <ItemGroup>
+    <!-- Core .NET packages -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="xunit" Version="2.6.6" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.6" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
+    
+    <!-- Source generators and analyzers -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
+    
+    <!-- Benchmarking -->
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.12" />
+    
+    <!-- Source Link -->
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    
+    <!-- Unity compatibility -->
+    <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    
+    <!-- Testing utilities -->
+    <PackageVersion Include="FluentAssertions" Version="6.12.0" />
+    <PackageVersion Include="Moq" Version="4.20.70" />
+    <PackageVersion Include="NUnit" Version="4.0.1" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+</Project>

@@ -24,7 +24,7 @@ x64/
 x86/
 build/
 bld/
-[Bb]in/
+[Bb]in/º
 [Oo]bj/
 msbuild.log
 msbuild.err
@@ -34,3 +34,6 @@ msbuild.wrn
 .vs/
 .idea/
 .DS_Store
+
+# Task documentation (internal use only)
+docs/tasks/

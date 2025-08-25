@@ -20,6 +20,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transport.Server", "Transpo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.Package", "Unity.Package\Unity.Package.csproj", "{AF49BD86-2CEE-4506-8238-E707EB1B7371}"
 EndProject
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serializer.Generator.Tests", "Serializer.Generator.Tests\Serializer.Generator.Tests.csproj", "{DDB4EFD5-CC86-47C1-BB94-F5A9FED88E4D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serializer.Runtime.Tests", "Serializer.Runtime.Tests\Serializer.Runtime.Tests.csproj", "{2D7FCA14-BC51-4544-A6AE-02A3FBD3A2A5}"
@@ -68,6 +69,7 @@ Global
 		{AF49BD86-2CEE-4506-8238-E707EB1B7371}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF49BD86-2CEE-4506-8238-E707EB1B7371}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF49BD86-2CEE-4506-8238-E707EB1B7371}.Release|Any CPU.Build.0 = Release|Any CPU
+
 		{DDB4EFD5-CC86-47C1-BB94-F5A9FED88E4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DDB4EFD5-CC86-47C1-BB94-F5A9FED88E4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDB4EFD5-CC86-47C1-BB94-F5A9FED88E4D}.Release|Any CPU.ActiveCfg = Release|Any CPU

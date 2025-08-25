@@ -1,0 +1,27 @@
+{
+  "name": "serializerstack",
+  "version": "1.0.0-alpha",
+  "description": "High-performance binary serialization with TCP transport for .NET and Unity",
+  "private": true,
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3"
+  },
+  "keywords": [
+    "dotnet",
+    "serialization",
+    "networking",
+    "unity",
+    "tcp",
+    "binary",
+    "mmorpg"
+  ],
+  "author": "Robert Hollingworth",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robbobby/RobbobbyNetworkingSolution.git"
+  }
+}

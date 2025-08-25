@@ -24,17 +24,18 @@
   
 ## A.1 Infrastructure
 
-* [ ] Configure:
+* [x] Configure:
 
-  * [ ] `Directory.Build.props` for TFM (`net9.0`, `netstandard2.1` where required).
-  * [ ] Central `Directory.Packages.props` for package versions.
-  * [ ] `.editorconfig` (C# style, formatting).
-  * [ ] `.gitignore` (VS, Rider, Unity).
-* [ ] Setup CI (GitHub Actions):
+  * [x] `Directory.Build.props` for TFM (`net9.0`, `netstandard2.1` where required).
+  * [x] Central `Directory.Packages.props` for package versions.
+  * [x] `.editorconfig` (C# style, formatting).
+  * [x] `.gitignore` (VS, Rider, Unity).
+* [x] Setup CI (GitHub Actions):
 
-  * Build/test matrix (`net9.0`, `netstandard2.1`).
-  * Pack NuGet artifacts.
-  * Publish on tags.
+  * [x] Build/test across all target frameworks (automatic detection).
+  * [x] Pack NuGet artifacts.
+  * [x] Smart triggers and advanced optimizations.
+  * [x] Publish on tags (manual approval required).
 * [ ] Setup code coverage (Coverlet + ReportGenerator).
 * [ ] Setup benchmark job (optional artifact upload).
 

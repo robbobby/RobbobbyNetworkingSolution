@@ -41,13 +41,13 @@
 
 ---
 
-## B. Serializer.Abstractions
+## B. Serializer.Abstractions -- COMPLETE
 
-* [ ] Implement `BinarySerializableAttribute`.
-* [ ] Define `IPacket` (marker).
-* [ ] Define `IPacket<TId>` with `TId Id { get; }`.
-* [ ] Optional: `IBinaryWritable` with `Write(Span<byte>)`, `GetSerializedSize()`.
-* [ ] Unit tests: attributes apply correctly, interface compile checks.
+* [x] Implement `BinarySerializableAttribute`.
+* [x] Define `IPacket` (marker).
+* [x] Define `IPacket<TId>` with `TId Id { get; }`.
+* [x] Optional: `IBinaryWritable` with `Write(Span<byte>)`, `GetSerializedSize()`.
+* [x] Unit tests: attributes apply correctly, interface compile checks.
 
 ---
 

@@ -1,0 +1,44 @@
+name: Test
+# Test workflow that runs after successful build
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test:
+    # Only run if build workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Run Tests
+        run: dotnet test --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: **/TestResults/**/*.trx
+          if-no-files-found: ignore

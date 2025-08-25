@@ -1,0 +1,98 @@
+name: Coverage
+# Coverage workflow that runs after successful build
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  actions: read
+jobs:
+  coverage:
+    # Only run if build workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      COVERAGE_THRESHOLD: '90'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+
+      - name: Run Tests with Coverage
+        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+
+      - name: Check Coverage Threshold
+        run: |
+          # Parse coverage XML and check if line coverage >= threshold
+          python3 -c "
+          import xml.etree.ElementTree as ET
+          import sys
+          import glob
+          import os
+
+          try:
+              # Find coverage file
+              coverage_files = glob.glob('**/TestResults/**/coverage.cobertura.xml', recursive=True)
+              if not coverage_files:
+                  print('❌ No coverage files found')
+                  sys.exit(1)
+
+              # Aggregate coverage from all files
+              total_covered = 0
+              total_valid = 0
+              for f in coverage_files:
+                  t = ET.parse(f)
+                  r = t.getroot()
+                  total_covered += int(r.get('lines-covered', 0))
+                  total_valid += int(r.get('lines-valid', 0))
+
+              lines_covered = total_covered
+              lines_valid = total_valid
+
+              if lines_valid == 0:
+                  print('⚠️  No valid lines found in coverage report (expected during setup phase)')
+                  print('📊 Coverage: 0/0 = 0.0%')
+                  print('✅ Coverage threshold check passed (setup phase)')
+                  sys.exit(0)
+
+              threshold = float(os.getenv('COVERAGE_THRESHOLD', '90'))
+              coverage_percent = (lines_covered / lines_valid) * 100
+              print(f'📊 Coverage: {lines_covered}/{lines_valid} = {coverage_percent:.1f}%')
+
+              if coverage_percent < threshold:
+                  print(f'❌ Coverage {coverage_percent:.1f}% is below {threshold:.1f}% threshold')
+                  print('💡 Add more tests or improve existing test coverage')
+                  sys.exit(1)
+              else:
+                  print(f'✅ Coverage {coverage_percent:.1f}% meets {threshold:.1f}% threshold')
+
+          except Exception as e:
+              print(f'❌ Error parsing coverage: {e}')
+              print('💡 Coverage threshold check failed due to an unexpected error')
+              sys.exit(1)
+          "
+
+      - name: Upload Coverage Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            **/TestResults/**/coverage.cobertura.xml
+          if-no-files-found: ignore

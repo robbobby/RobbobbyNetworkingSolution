@@ -1,6 +1,5 @@
-name: CI/CD Pipeline
-# Basic CI validation workflow
-# Other specialized workflows (Build, Test, Coverage, Packages) handle their specific tasks
+name: Build
+# Main build workflow that other workflows depend on
 on:
   push:
     branches: [ main, develop ]
@@ -19,7 +18,7 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,8 +36,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build Debug
-        run: dotnet build --configuration Debug --no-restore
+      - name: Build Release
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Run Quick Tests
-        run: dotnet test --configuration Debug --no-build --filter "Category=Unit" --verbosity minimal
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/bin/Release/
+            **/obj/Release/
+          retention-days: 1

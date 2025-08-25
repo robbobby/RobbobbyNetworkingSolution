@@ -1,8 +1,8 @@
-name: NuGet Packages
-# Run package generation after successful CI build
+name: Packages
+# Package workflow that runs after successful build
 on:
   workflow_run:
-    workflows: ["CI/CD Pipeline"]
+    workflows: ["Build"]
     types: [completed]
     branches: [ main, develop ]
 
@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  package-generation:
-    # Only run if CI workflow succeeded
+  packages:
+    # Only run if build workflow succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
@@ -22,16 +22,12 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-          cache: true
-          cache-dependency-path: |
-            **/packages.lock.json
-            **/*.csproj
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build Release
-        run: dotnet build --configuration Release --no-restore
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: .
 
       - name: Generate NuGet Packages
         run: dotnet pack --configuration Release --no-build

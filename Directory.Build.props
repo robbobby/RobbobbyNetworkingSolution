@@ -46,6 +46,10 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <IncludeSymbols Condition="'$(Configuration)' == 'Release'">true</IncludeSymbols>
     <SymbolPackageFormat Condition="'$(Configuration)' == 'Release'">snupkg</SymbolPackageFormat>
+    
+    <!-- Code Coverage Configuration -->
+    <CollectCoverage>true</CollectCoverage>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
   </PropertyGroup>
   
   <!-- Common package references -->

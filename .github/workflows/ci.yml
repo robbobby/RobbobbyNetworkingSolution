@@ -44,8 +44,8 @@ jobs:
       - name: Build Release
         run: dotnet build --configuration Release --no-restore
 
-      - name: Test Release
-        run: dotnet test --configuration Release --no-build --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
+      - name: Test with Coverage
+        run: dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test_results.trx" --results-directory ./TestResults
 
       - name: Pack Release
         run: dotnet pack --configuration Release --no-build
@@ -58,3 +58,11 @@ jobs:
             **/bin/Release/**/*.nupkg
             **/bin/Release/**/*.snupkg
             **/TestResults/**/*.trx
+
+      - name: Upload Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            **/TestResults/**/coverage.cobertura.xml
+          if-no-files-found: ignore

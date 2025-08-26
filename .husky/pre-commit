@@ -4,7 +4,16 @@
 echo "🔍 Running pre-commit checks..."
 
 echo "📝 Formatting C# files..."
-dotnet format
+# Safe whitespace across the whole repo (tests included, no analyzer code fixes):
+dotnet format whitespace --no-restore --verbosity minimal
+# Analyzer fixes only for non-test projects:
+for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
+  dotnet format analyzers "$p" --no-restore --verbosity minimal
+done
+
+# Ensure formatting changes are included in this commit
+echo "📦 Staging formatting changes..."
+git add -u
 
 echo "🔨 Building solution..."
 dotnet build

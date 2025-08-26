@@ -72,6 +72,10 @@ csharp_prefer_simple_using_statement = true:suggestion
 csharp_style_pattern_local_over_anonymous_function = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 
+[*.cs]
+# xUnit analyzer configuration - use only supported Roslyn keys
+# Set xUnit1000 to warning to prevent auto-fixing of test class visibility
+dotnet_diagnostic.xUnit1000.severity = warning
 # Project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_style = space
@@ -95,3 +99,7 @@ indent_size = 2
 # Markdown files
 [*.md]
 trim_trailing_whitespace = false
+
+# Test project specific analyzer configuration
+[Serializer.Abstractions.Tests/**/*.cs]
+dotnet_analyzer_diagnostic.category-xUnit.severity = none

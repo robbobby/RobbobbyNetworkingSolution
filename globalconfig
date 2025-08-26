@@ -1,6 +1,8 @@
 # Global analyzer configuration
 # This file disables auto-fixing for problematic analyzers
 
+# Treat this file as a global analyzer config
+is_global = true
 # Disable all xUnit auto-fixing
 dotnet_diagnostic.xUnit*.auto_fix = false
 dotnet_diagnostic.xUnit*.auto_fix_severity = none

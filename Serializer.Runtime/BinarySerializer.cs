@@ -1,5 +1,6 @@
 using System;
 using System.Buffers.Binary;
+using System.Text;
 
 namespace Serializer.Runtime
 {
@@ -494,6 +495,71 @@ namespace Serializer.Runtime
 
             value = new Guid(tmp);
             return GuidSize;
+        }
+
+        #endregion
+
+        #region String
+
+        /// <summary>
+        /// Writes a string value to the specified buffer with UTF-8 encoding and UInt16 length prefix.
+        /// </summary>
+        /// <param name="destination">The destination buffer.</param>
+        /// <param name="value">The string value to write, or null.</param>
+        /// <returns>The number of bytes written (2 for length prefix + string bytes).</returns>
+        /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
+        public static int WriteString(Span<byte> destination, string? value)
+        {
+            if (value == null)
+            {
+                if (destination.Length < 2)
+                    throw new ArgumentException("Insufficient buffer space for null string length prefix", nameof(destination));
+
+                WriteUInt16(destination, 0);
+                return 2;
+            }
+
+            if (destination.Length < 2)
+                throw new ArgumentException("Insufficient buffer space for string length prefix", nameof(destination));
+
+            var bytes = Encoding.UTF8.GetBytes(value);
+            if (bytes.Length > ushort.MaxValue)
+                throw new ArgumentException($"String too long: {bytes.Length} bytes exceeds maximum {ushort.MaxValue}", nameof(value));
+
+            if (destination.Length < 2 + bytes.Length)
+                throw new ArgumentException($"Insufficient buffer space: need {2 + bytes.Length}, have {destination.Length}", nameof(destination));
+
+            WriteUInt16(destination, (ushort)bytes.Length);
+            bytes.CopyTo(destination.Slice(2));
+
+            return 2 + bytes.Length;
+        }
+
+        /// <summary>
+        /// Reads a string value from the specified buffer with UTF-8 encoding and UInt16 length prefix.
+        /// </summary>
+        /// <param name="source">The source buffer.</param>
+        /// <param name="value">The read string value.</param>
+        /// <returns>The number of bytes read (2 for length prefix + string bytes).</returns>
+        /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
+        public static int ReadString(ReadOnlySpan<byte> source, out string value)
+        {
+            if (source.Length < 2)
+                throw new ArgumentException("Insufficient buffer space for string length prefix", nameof(source));
+
+            var length = ReadUInt16(source, out var lengthValue);
+
+            if (lengthValue == 0)
+            {
+                value = string.Empty;
+                return 2;
+            }
+
+            if (source.Length < 2 + lengthValue)
+                throw new ArgumentException($"Insufficient buffer space for string content: need {2 + lengthValue}, have {source.Length}", nameof(source));
+
+            value = Encoding.UTF8.GetString(source.Slice(2, lengthValue));
+            return 2 + lengthValue;
         }
 
         #endregion

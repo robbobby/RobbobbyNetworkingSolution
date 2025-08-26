@@ -3,201 +3,121 @@
 namespace Serializer.Generator.Tests
 {
     /// <summary>
-    /// Interface for packet keys of SimpleTestPacket
-    /// </summary>
-    public interface ISimpleTestPacketKeys
-    {
-        int PacketTypeId { get; }
-        string PacketName { get; }
-        int PacketVersion { get; }
-        Type PacketType { get; }
-    }
-
-    /// <summary>
-    /// Packet keys for SimpleTestPacket
-    /// </summary>
-    public class SimpleTestPacketKeys : ISimpleTestPacketKeys
-    {
-        public int PacketTypeId => 5178;
-        public string PacketName => "SimpleTestPacket";
-        public int PacketVersion => 1;
-
-        /// <summary>
-        /// Runtime-accessible metadata for SimpleTestPacket
-        /// </summary>
-        public Type PacketType => typeof(SimpleTestPacket);
-
-        /// <summary>
-        /// Singleton instance for RnsKeys property access
-        /// </summary>
-        public static readonly ISimpleTestPacketKeys Instance = new SimpleTestPacketKeys();
-    }
-
-    /// <summary>
-    /// Generated partial class for SimpleTestPacket with serialization support
+    /// Generated partial class for SimpleTestPacket with RNS Binary Spec v1 serialization support
     /// </summary>
     public partial class SimpleTestPacket
     {
         /// <summary>
-        /// Static access to packet keys and metadata
+        /// Compile-time field number constants for fast lookup
         /// </summary>
-        public static ISimpleTestPacketKeys RnsKeys => SimpleTestPacketKeys.Instance;
-
-        /// <summary>
-        /// Alternative access to packet keys (for polymorphic scenarios)
-        /// </summary>
-        public static ISimpleTestPacketKeys Keys => SimpleTestPacketKeys.Instance;
-
-        /// <summary>
-        /// Writes the current instance to the specified buffer
-        /// </summary>
-        /// <param name="destination">The destination buffer</param>
-        /// <returns>The number of bytes written</returns>
-        public int Write(System.Span<byte> destination)
+        public static class Keys
         {
-            var offset = 0;
-
-            // Write Id key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            // Write flag indicating if value is default
-            var hasIdValue = Id != 0;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasIdValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
-            }
-
-            // Write Name key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            // Write flag indicating if value is default
-            var hasNameValue = !string.IsNullOrEmpty(Name);
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasNameValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasNameValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), Name);
-            }
-
-            // Write terminator byte
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
-
-            return offset;
+            public const int Id = 1;
+            public const int Name = 2;
         }
 
         /// <summary>
-        /// Attempts to read a SimpleTestPacket instance from the specified buffer
-        /// </summary>
-        /// <param name="source">The source buffer</param>
-        /// <param name="value">The read value</param>
-        /// <param name="bytesRead">The number of bytes read</param>
-        /// <returns>True if successful, false otherwise</returns>
-        public static bool TryRead(System.ReadOnlySpan<byte> source, out SimpleTestPacket value, out int bytesRead)
-        {
-            value = default!;
-            bytesRead = 0;
-
-            try
-            {
-                value = new SimpleTestPacket();
-                var offset = 0;
-
-                // Read properties in key-flag-value format until terminator
-                while (offset < source.Length)
-                {
-                    // Check if we have enough data for key and flag
-                    if (offset + 2 > source.Length) break;
-
-                    // Read property key and flag
-                    var propertyKey = source[offset];
-                    var hasValue = source[offset + 1] != 0;
-                    offset += 2;
-
-                    // Check for terminator
-                    if (propertyKey == 0xFF) break;
-
-                    // Process property based on key
-                    switch (propertyKey)
-                    {
-                        case 0: // Id
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 4 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
-                                    value.Id = IdValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 1: // Name
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a string (at least 2 bytes for length)
-                                if (offset + 2 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NameValue);
-                                    value.Name = NameValue;
-                                }
-                            }
-                            // If no value, keep default (null/empty)
-                            break;
-                        }
-                        default:
-                            // Unknown property key, skip to next
-                            break;
-                    }
-                }
-                bytesRead = offset;
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the total number of bytes required to serialize this instance
-        /// </summary>
-        /// <returns>The serialized size in bytes</returns>
-        public int GetSerializedSize()
-        {
-            var size = 0;
-
-            // Id: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (Id != 0)
-            {
-                size += 4;
-            }
-
-            // Name: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
-            size += 2; // Always count key and flag
-            if (!string.IsNullOrEmpty(Name))
-            {
-                size += 2 + System.Text.Encoding.UTF8.GetByteCount(Name ?? "");
-            }
-
-            // 1 byte for terminator
-            size += 1;
-
-            return size;
-        }
-
-        /// <summary>
-        /// Convenience method for array-based serialization
+        /// Writes the current instance to the specified buffer using RNS Binary Spec v1
         /// </summary>
         /// <param name="buffer">The destination buffer</param>
-        /// <returns>The number of bytes written</returns>
-        public int ToBytes(byte[] buffer)
+        /// <param name="bytesWritten">The number of bytes written</param>
+        /// <returns>True if successful, false if buffer is too small</returns>
+        public bool Write(System.Span<byte> buffer, out int bytesWritten)
         {
-            return Write(buffer);
+            bytesWritten = 0;
+            var dst = buffer;
+
+            // Id (field 1, WT=0 via ZigZag)
+            if (Id != 0)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.Id, 0), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, Serializer.Runtime.RnsCodec.ZigZag32(Id), out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // Name (field 2, WT=2)
+            if (!string.IsNullOrEmpty(Name))
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.Name, 2), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteString(dst, Name, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            return true;
         }
+
+        /// <summary>
+        /// Attempts to read a SimpleTestPacket instance from the specified buffer using RNS Binary Spec v1
+        /// </summary>
+        /// <param name="buffer">The source buffer</param>
+        /// <param name="readPacket">The read packet</param>
+        /// <param name="bytesRead">The number of bytes read</param>
+        /// <returns>True if successful, false otherwise</returns>
+        public static bool TryRead(System.ReadOnlySpan<byte> buffer, out SimpleTestPacket readPacket, out int bytesRead)
+        {
+            readPacket = new SimpleTestPacket();
+            bytesRead = 0;
+            var src = buffer;
+
+            while (!src.IsEmpty)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var tag, out var tr)) return false;
+                src = src[tr..]; bytesRead += tr;
+
+                var field = (int)(tag >> 3);
+                var wt = (int)(tag & 7);
+
+                switch (field)
+                {
+                    case Keys.Id when wt == 0:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var zz, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.Id = Serializer.Runtime.RnsCodec.UnZigZag32(zz);
+                        break;
+                    }
+                    case Keys.Name when wt == 2:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadString(src, out var s, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.Name = s;
+                        break;
+                    }
+                    default:
+                        // Skip unknown
+                        if (!SkipUnknown(ref src, ref bytesRead, wt)) return false;
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool SkipUnknown(ref System.ReadOnlySpan<byte> src, ref int consumed, int wt)
+        {
+            switch (wt)
+            {
+                case 0:
+                    if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out _, out var r0)) return false;
+                    src = src[r0..]; consumed += r0; return true;
+                case 1:
+                    if (src.Length < 8) return false;
+                    src = src[8..]; consumed += 8; return true;
+                case 2:
+                    if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var len, out var r2)) return false;
+                    src = src[r2..];
+                    if (src.Length < len) return false;
+                    src = src[(int)len..]; consumed += r2 + (int)len; return true;
+                case 5:
+                    if (src.Length < 4) return false;
+                    src = src[4..]; consumed += 4; return true;
+                default: return false;
+            }
+        }
+
+        private static uint MakeTag(int f, int wt) => (uint)((f << 3) | wt);
 
     }
 }

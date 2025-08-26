@@ -3,489 +3,242 @@
 namespace Serializer.Generator.Tests
 {
     /// <summary>
-    /// Interface for packet keys of EdgeCaseTestPacket
-    /// </summary>
-    public interface IEdgeCaseTestPacketKeys
-    {
-        int PacketTypeId { get; }
-        string PacketName { get; }
-        int PacketVersion { get; }
-        Type PacketType { get; }
-    }
-
-    /// <summary>
-    /// Packet keys for EdgeCaseTestPacket
-    /// </summary>
-    public class EdgeCaseTestPacketKeys : IEdgeCaseTestPacketKeys
-    {
-        public int PacketTypeId => 7905;
-        public string PacketName => "EdgeCaseTestPacket";
-        public int PacketVersion => 1;
-
-        /// <summary>
-        /// Runtime-accessible metadata for EdgeCaseTestPacket
-        /// </summary>
-        public Type PacketType => typeof(EdgeCaseTestPacket);
-
-        /// <summary>
-        /// Singleton instance for RnsKeys property access
-        /// </summary>
-        public static readonly IEdgeCaseTestPacketKeys Instance = new EdgeCaseTestPacketKeys();
-    }
-
-    /// <summary>
-    /// Generated partial class for EdgeCaseTestPacket with serialization support
+    /// Generated partial class for EdgeCaseTestPacket with RNS Binary Spec v1 serialization support
     /// </summary>
     public partial class EdgeCaseTestPacket
     {
         /// <summary>
-        /// Static access to packet keys and metadata
+        /// Compile-time field number constants for fast lookup
         /// </summary>
-        public static IEdgeCaseTestPacketKeys RnsKeys => EdgeCaseTestPacketKeys.Instance;
-
-        /// <summary>
-        /// Alternative access to packet keys (for polymorphic scenarios)
-        /// </summary>
-        public static IEdgeCaseTestPacketKeys Keys => EdgeCaseTestPacketKeys.Instance;
-
-        /// <summary>
-        /// Writes the current instance to the specified buffer
-        /// </summary>
-        /// <param name="destination">The destination buffer</param>
-        /// <returns>The number of bytes written</returns>
-        public int Write(System.Span<byte> destination)
+        public static class Keys
         {
-            var offset = 0;
-
-            // Write Id key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            // Write flag indicating if value is default
-            var hasIdValue = !string.IsNullOrEmpty(Id);
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasIdValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), Id);
-            }
-
-            // Write MaxInt key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            // Write flag indicating if value is default
-            var hasMaxIntValue = MaxInt != 0;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMaxIntValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasMaxIntValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), MaxInt);
-            }
-
-            // Write MinInt key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
-            // Write flag indicating if value is default
-            var hasMinIntValue = MinInt != 0;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMinIntValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasMinIntValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), MinInt);
-            }
-
-            // Write MaxFloat key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 3);
-            // Write flag indicating if value is default
-            var hasMaxFloatValue = MaxFloat != 0f;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMaxFloatValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasMaxFloatValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), MaxFloat);
-            }
-
-            // Write MinFloat key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
-            // Write flag indicating if value is default
-            var hasMinFloatValue = MinFloat != 0f;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMinFloatValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasMinFloatValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), MinFloat);
-            }
-
-            // Write MaxDouble key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 5);
-            // Write flag indicating if value is default
-            var hasMaxDoubleValue = MaxDouble != 0d;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMaxDoubleValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasMaxDoubleValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), MaxDouble);
-            }
-
-            // Write MinDouble key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 6);
-            // Write flag indicating if value is default
-            var hasMinDoubleValue = MinDouble != 0d;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMinDoubleValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasMinDoubleValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), MinDouble);
-            }
-
-            // Write EmptyString key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 7);
-            // Write flag indicating if value is default
-            var hasEmptyStringValue = !string.IsNullOrEmpty(EmptyString);
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasEmptyStringValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasEmptyStringValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), EmptyString);
-            }
-
-            // Write LongString key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 8);
-            // Write flag indicating if value is default
-            var hasLongStringValue = !string.IsNullOrEmpty(LongString);
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasLongStringValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasLongStringValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), LongString);
-            }
-
-            // Write TrueValue key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 9);
-            // Write flag indicating if value is default
-            var hasTrueValueValue = TrueValue != false;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasTrueValueValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasTrueValueValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), TrueValue);
-            }
-
-            // Write FalseValue key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 10);
-            // Write flag indicating if value is default
-            var hasFalseValueValue = FalseValue != false;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasFalseValueValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasFalseValueValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), FalseValue);
-            }
-
-            // Write terminator byte
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
-
-            return offset;
+            public const int Id = 1;
+            public const int MaxInt = 2;
+            public const int MinInt = 3;
+            public const int MaxFloat = 4;
+            public const int MinFloat = 5;
+            public const int MaxDouble = 6;
+            public const int MinDouble = 7;
+            public const int EmptyString = 8;
+            public const int LongString = 9;
+            public const int TrueValue = 10;
+            public const int FalseValue = 11;
         }
 
         /// <summary>
-        /// Attempts to read a EdgeCaseTestPacket instance from the specified buffer
-        /// </summary>
-        /// <param name="source">The source buffer</param>
-        /// <param name="value">The read value</param>
-        /// <param name="bytesRead">The number of bytes read</param>
-        /// <returns>True if successful, false otherwise</returns>
-        public static bool TryRead(System.ReadOnlySpan<byte> source, out EdgeCaseTestPacket value, out int bytesRead)
-        {
-            value = default!;
-            bytesRead = 0;
-
-            try
-            {
-                value = new EdgeCaseTestPacket();
-                var offset = 0;
-
-                // Read properties in key-flag-value format until terminator
-                while (offset < source.Length)
-                {
-                    // Check if we have enough data for key and flag
-                    if (offset + 2 > source.Length) break;
-
-                    // Read property key and flag
-                    var propertyKey = source[offset];
-                    var hasValue = source[offset + 1] != 0;
-                    offset += 2;
-
-                    // Check for terminator
-                    if (propertyKey == 0xFF) break;
-
-                    // Process property based on key
-                    switch (propertyKey)
-                    {
-                        case 0: // Id
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a string (at least 2 bytes for length)
-                                if (offset + 2 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var IdValue);
-                                    value.Id = IdValue;
-                                }
-                            }
-                            // If no value, keep default (null/empty)
-                            break;
-                        }
-                        case 1: // MaxInt
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 4 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var MaxIntValue);
-                                    value.MaxInt = MaxIntValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 2: // MinInt
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 4 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var MinIntValue);
-                                    value.MinInt = MinIntValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 3: // MaxFloat
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 4 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var MaxFloatValue);
-                                    value.MaxFloat = MaxFloatValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 4: // MinFloat
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 4 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var MinFloatValue);
-                                    value.MinFloat = MinFloatValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 5: // MaxDouble
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 8 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var MaxDoubleValue);
-                                    value.MaxDouble = MaxDoubleValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 6: // MinDouble
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 8 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var MinDoubleValue);
-                                    value.MinDouble = MinDoubleValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 7: // EmptyString
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a string (at least 2 bytes for length)
-                                if (offset + 2 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var EmptyStringValue);
-                                    value.EmptyString = EmptyStringValue;
-                                }
-                            }
-                            // If no value, keep default (null/empty)
-                            break;
-                        }
-                        case 8: // LongString
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a string (at least 2 bytes for length)
-                                if (offset + 2 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var LongStringValue);
-                                    value.LongString = LongStringValue;
-                                }
-                            }
-                            // If no value, keep default (null/empty)
-                            break;
-                        }
-                        case 9: // TrueValue
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 1 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var TrueValueValue);
-                                    value.TrueValue = TrueValueValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 10: // FalseValue
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 1 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var FalseValueValue);
-                                    value.FalseValue = FalseValueValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        default:
-                            // Unknown property key, skip to next
-                            break;
-                    }
-                }
-                bytesRead = offset;
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the total number of bytes required to serialize this instance
-        /// </summary>
-        /// <returns>The serialized size in bytes</returns>
-        public int GetSerializedSize()
-        {
-            var size = 0;
-
-            // Id: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
-            size += 2; // Always count key and flag
-            if (!string.IsNullOrEmpty(Id))
-            {
-                size += 2 + System.Text.Encoding.UTF8.GetByteCount(Id ?? "");
-            }
-
-            // MaxInt: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (MaxInt != 0)
-            {
-                size += 4;
-            }
-
-            // MinInt: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (MinInt != 0)
-            {
-                size += 4;
-            }
-
-            // MaxFloat: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (MaxFloat != 0f)
-            {
-                size += 4;
-            }
-
-            // MinFloat: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (MinFloat != 0f)
-            {
-                size += 4;
-            }
-
-            // MaxDouble: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (MaxDouble != 0d)
-            {
-                size += 8;
-            }
-
-            // MinDouble: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (MinDouble != 0d)
-            {
-                size += 8;
-            }
-
-            // EmptyString: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
-            size += 2; // Always count key and flag
-            if (!string.IsNullOrEmpty(EmptyString))
-            {
-                size += 2 + System.Text.Encoding.UTF8.GetByteCount(EmptyString ?? "");
-            }
-
-            // LongString: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
-            size += 2; // Always count key and flag
-            if (!string.IsNullOrEmpty(LongString))
-            {
-                size += 2 + System.Text.Encoding.UTF8.GetByteCount(LongString ?? "");
-            }
-
-            // TrueValue: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (TrueValue != false)
-            {
-                size += 1;
-            }
-
-            // FalseValue: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (FalseValue != false)
-            {
-                size += 1;
-            }
-
-            // 1 byte for terminator
-            size += 1;
-
-            return size;
-        }
-
-        /// <summary>
-        /// Convenience method for array-based serialization
+        /// Writes the current instance to the specified buffer using RNS Binary Spec v1
         /// </summary>
         /// <param name="buffer">The destination buffer</param>
-        /// <returns>The number of bytes written</returns>
-        public int ToBytes(byte[] buffer)
+        /// <param name="bytesWritten">The number of bytes written</param>
+        /// <returns>True if successful, false if buffer is too small</returns>
+        public bool Write(System.Span<byte> buffer, out int bytesWritten)
         {
-            return Write(buffer);
+            bytesWritten = 0;
+            var dst = buffer;
+
+            // Id (field 1, WT=2)
+            if (!string.IsNullOrEmpty(Id))
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.Id, 2), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteString(dst, Id, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // MaxInt (field 2, WT=0 via ZigZag)
+            if (MaxInt != 0)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.MaxInt, 0), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, Serializer.Runtime.RnsCodec.ZigZag32(MaxInt), out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // MinInt (field 3, WT=0 via ZigZag)
+            if (MinInt != 0)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.MinInt, 0), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, Serializer.Runtime.RnsCodec.ZigZag32(MinInt), out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // MaxFloat (field 4, WT=5)
+            if (MaxFloat != 0f)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.MaxFloat, 5), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteFloat32(dst, MaxFloat, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // MinFloat (field 5, WT=5)
+            if (MinFloat != 0f)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.MinFloat, 5), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteFloat32(dst, MinFloat, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // EmptyString (field 8, WT=2)
+            if (!string.IsNullOrEmpty(EmptyString))
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.EmptyString, 2), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteString(dst, EmptyString, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // LongString (field 9, WT=2)
+            if (!string.IsNullOrEmpty(LongString))
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.LongString, 2), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteString(dst, LongString, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // TrueValue (field 10, WT=0)
+            if (TrueValue)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.TrueValue, 0), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, 1u, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            // FalseValue (field 11, WT=0)
+            if (FalseValue)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.FalseValue, 0), out var w1)) { bytesWritten = 0; return false; }
+                dst = dst[w1..]; bytesWritten += w1;
+                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, 1u, out var w2)) { bytesWritten = 0; return false; }
+                dst = dst[w2..]; bytesWritten += w2;
+            }
+
+            return true;
         }
+
+        /// <summary>
+        /// Attempts to read a EdgeCaseTestPacket instance from the specified buffer using RNS Binary Spec v1
+        /// </summary>
+        /// <param name="buffer">The source buffer</param>
+        /// <param name="readPacket">The read packet</param>
+        /// <param name="bytesRead">The number of bytes read</param>
+        /// <returns>True if successful, false otherwise</returns>
+        public static bool TryRead(System.ReadOnlySpan<byte> buffer, out EdgeCaseTestPacket readPacket, out int bytesRead)
+        {
+            readPacket = new EdgeCaseTestPacket();
+            bytesRead = 0;
+            var src = buffer;
+
+            while (!src.IsEmpty)
+            {
+                if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var tag, out var tr)) return false;
+                src = src[tr..]; bytesRead += tr;
+
+                var field = (int)(tag >> 3);
+                var wt = (int)(tag & 7);
+
+                switch (field)
+                {
+                    case Keys.Id when wt == 2:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadString(src, out var s, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.Id = s;
+                        break;
+                    }
+                    case Keys.MaxInt when wt == 0:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var zz, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.MaxInt = Serializer.Runtime.RnsCodec.UnZigZag32(zz);
+                        break;
+                    }
+                    case Keys.MinInt when wt == 0:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var zz, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.MinInt = Serializer.Runtime.RnsCodec.UnZigZag32(zz);
+                        break;
+                    }
+                    case Keys.MaxFloat when wt == 5:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadFloat32(src, out var v, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.MaxFloat = v;
+                        break;
+                    }
+                    case Keys.MinFloat when wt == 5:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadFloat32(src, out var v, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.MinFloat = v;
+                        break;
+                    }
+                    case Keys.EmptyString when wt == 2:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadString(src, out var s, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.EmptyString = s;
+                        break;
+                    }
+                    case Keys.LongString when wt == 2:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadString(src, out var s, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.LongString = s;
+                        break;
+                    }
+                    case Keys.TrueValue when wt == 0:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var v, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.TrueValue = v != 0;
+                        break;
+                    }
+                    case Keys.FalseValue when wt == 0:
+                    {
+                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var v, out var r)) return false;
+                        src = src[r..]; bytesRead += r;
+                        readPacket.FalseValue = v != 0;
+                        break;
+                    }
+                    default:
+                        // Skip unknown
+                        if (!SkipUnknown(ref src, ref bytesRead, wt)) return false;
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool SkipUnknown(ref System.ReadOnlySpan<byte> src, ref int consumed, int wt)
+        {
+            switch (wt)
+            {
+                case 0:
+                    if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out _, out var r0)) return false;
+                    src = src[r0..]; consumed += r0; return true;
+                case 1:
+                    if (src.Length < 8) return false;
+                    src = src[8..]; consumed += 8; return true;
+                case 2:
+                    if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var len, out var r2)) return false;
+                    src = src[r2..];
+                    if (src.Length < len) return false;
+                    src = src[(int)len..]; consumed += r2 + (int)len; return true;
+                case 5:
+                    if (src.Length < 4) return false;
+                    src = src[4..]; consumed += 4; return true;
+                default: return false;
+            }
+        }
+
+        private static uint MakeTag(int f, int wt) => (uint)((f << 3) | wt);
 
     }
 }

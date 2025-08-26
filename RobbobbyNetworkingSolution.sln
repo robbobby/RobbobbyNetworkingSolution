@@ -1,5 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{04041BC2-3877-47DB-BAA3-CA19171BBE84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integration", "Integration", "{0100F139-9D38-48C8-8471-F7498E9318B0}"
@@ -37,6 +38,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serializer.Abstractions.Tests", "Serializer.Abstractions.Tests\Serializer.Abstractions.Tests.csproj", "{8F301351-2A2D-4152-BCE3-FA52108AE0CC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Packets", "Sample.Packets\Sample.Packets.csproj", "{3535F74E-DF89-43E2-A835-C2F77D08B3E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.RnsPackets", "Test.RnsPackets\Test.RnsPackets.csproj", "{3958D001-DBF4-40C2-9470-F8FA54E1863C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -240,6 +243,18 @@ Global
 		{3535F74E-DF89-43E2-A835-C2F77D08B3E2}.Release|x64.Build.0 = Release|Any CPU
 		{3535F74E-DF89-43E2-A835-C2F77D08B3E2}.Release|x86.ActiveCfg = Release|Any CPU
 		{3535F74E-DF89-43E2-A835-C2F77D08B3E2}.Release|x86.Build.0 = Release|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Debug|x64.Build.0 = Debug|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Debug|x86.Build.0 = Debug|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Release|x64.ActiveCfg = Release|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Release|x64.Build.0 = Release|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Release|x86.ActiveCfg = Release|Any CPU
+		{3958D001-DBF4-40C2-9470-F8FA54E1863C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

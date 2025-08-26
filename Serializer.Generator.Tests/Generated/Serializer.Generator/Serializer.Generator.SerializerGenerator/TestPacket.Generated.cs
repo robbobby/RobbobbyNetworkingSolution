@@ -57,19 +57,8 @@ namespace Serializer.Generator.Tests
         {
             var offset = 0;
 
-            // Write Id key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            // Write flag indicating if value is default
-            var hasIdValue = Id != 0;
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
-            // Write value only if not default
-            if (hasIdValue)
-            {
-                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
-            }
-
             // Write PlayerName key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
             // Write flag indicating if value is default
             var hasPlayerNameValue = !string.IsNullOrEmpty(PlayerName);
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasPlayerNameValue ? (byte)1 : (byte)0);
@@ -80,7 +69,7 @@ namespace Serializer.Generator.Tests
             }
 
             // Write X key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
             // Write flag indicating if value is default
             var hasXValue = X != 0f;
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasXValue ? (byte)1 : (byte)0);
@@ -91,7 +80,7 @@ namespace Serializer.Generator.Tests
             }
 
             // Write Y key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 3);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
             // Write flag indicating if value is default
             var hasYValue = Y != 0f;
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasYValue ? (byte)1 : (byte)0);
@@ -102,7 +91,7 @@ namespace Serializer.Generator.Tests
             }
 
             // Write Health key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 3);
             // Write flag indicating if value is default
             var hasHealthValue = Health != 0;
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasHealthValue ? (byte)1 : (byte)0);
@@ -113,7 +102,7 @@ namespace Serializer.Generator.Tests
             }
 
             // Write IsAlive key
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 5);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
             // Write flag indicating if value is default
             var hasIsAliveValue = IsAlive != false;
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIsAliveValue ? (byte)1 : (byte)0);
@@ -163,21 +152,7 @@ namespace Serializer.Generator.Tests
                     // Process property based on key
                     switch (propertyKey)
                     {
-                        case 0: // Id
-                        {
-                            if (hasValue)
-                            {
-                                // Check if there's enough data to read a value
-                                if (offset + 4 <= source.Length)
-                                {
-                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
-                                    value.Id = IdValue;
-                                }
-                            }
-                            // If no value, keep default
-                            break;
-                        }
-                        case 1: // PlayerName
+                        case 0: // PlayerName
                         {
                             if (hasValue)
                             {
@@ -191,7 +166,7 @@ namespace Serializer.Generator.Tests
                             // If no value, keep default (null/empty)
                             break;
                         }
-                        case 2: // X
+                        case 1: // X
                         {
                             if (hasValue)
                             {
@@ -205,7 +180,7 @@ namespace Serializer.Generator.Tests
                             // If no value, keep default
                             break;
                         }
-                        case 3: // Y
+                        case 2: // Y
                         {
                             if (hasValue)
                             {
@@ -219,7 +194,7 @@ namespace Serializer.Generator.Tests
                             // If no value, keep default
                             break;
                         }
-                        case 4: // Health
+                        case 3: // Health
                         {
                             if (hasValue)
                             {
@@ -233,7 +208,7 @@ namespace Serializer.Generator.Tests
                             // If no value, keep default
                             break;
                         }
-                        case 5: // IsAlive
+                        case 4: // IsAlive
                         {
                             if (hasValue)
                             {
@@ -247,6 +222,8 @@ namespace Serializer.Generator.Tests
                             // If no value, keep default
                             break;
                         }
+                        case 5: // FieldPacket
+                        case 6: // FieldPacketList
                         default:
                             // Unknown property key, skip to next
                             break;
@@ -268,13 +245,6 @@ namespace Serializer.Generator.Tests
         public int GetSerializedSize()
         {
             var size = 0;
-
-            // Id: 2 bytes (key + flag) + value size (if not default)
-            size += 2; // Always count key and flag
-            if (Id != 0)
-            {
-                size += 4;
-            }
 
             // PlayerName: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
             size += 2; // Always count key and flag

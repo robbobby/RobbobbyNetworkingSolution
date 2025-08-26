@@ -7,7 +7,7 @@ using Serializer.Runtime;
 namespace Serializer.Runtime.Tests
 {
     [Trait("Category", "Unit")]
-    public sealed class BinarySerializerTests
+    public sealed class RnsCodec
     {
         #region Boolean Tests
 
@@ -18,7 +18,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteBoolean(buffer, true);
+            var bytesWritten = RndCodec.WriteBoolean(buffer, true);
 
             // Assert
             Assert.Equal(1, bytesWritten);
@@ -32,7 +32,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteBoolean(buffer, false);
+            var bytesWritten = RndCodec.WriteBoolean(buffer, false);
 
             // Assert
             Assert.Equal(1, bytesWritten);
@@ -46,7 +46,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteBoolean(buffer, true));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteBoolean(buffer, true));
             Assert.Contains("Buffer too small for boolean", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -58,7 +58,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[] { 1 };
 
             // Act
-            var bytesRead = BinarySerializer.ReadBoolean(buffer, out var value);
+            var bytesRead = RndCodec.ReadBoolean(buffer, out var value);
 
             // Assert
             Assert.Equal(1, bytesRead);
@@ -72,7 +72,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[] { 0 };
 
             // Act
-            var bytesRead = BinarySerializer.ReadBoolean(buffer, out var value);
+            var bytesRead = RndCodec.ReadBoolean(buffer, out var value);
 
             // Assert
             Assert.Equal(1, bytesRead);
@@ -86,7 +86,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadBoolean(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadBoolean(buffer, out _));
             Assert.Contains("Buffer too small for boolean", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -99,13 +99,13 @@ namespace Serializer.Runtime.Tests
 
             // Test true (1)
             buffer[0] = 1;
-            var result = BinarySerializer.ReadBooleanStrict(buffer, out var value);
+            var result = RndCodec.ReadBooleanStrict(buffer, out var value);
             Assert.Equal(1, result);
             Assert.True(value);
 
             // Test false (0)
             buffer[0] = 0;
-            result = BinarySerializer.ReadBooleanStrict(buffer, out value);
+            result = RndCodec.ReadBooleanStrict(buffer, out value);
             Assert.Equal(1, result);
             Assert.False(value);
         }
@@ -118,7 +118,7 @@ namespace Serializer.Runtime.Tests
             buffer[0] = 42; // Invalid boolean value
 
             // Act & Assert
-            var exception = Assert.Throws<FormatException>(() => BinarySerializer.ReadBooleanStrict(buffer, out _));
+            var exception = Assert.Throws<FormatException>(() => RndCodec.ReadBooleanStrict(buffer, out _));
             Assert.Contains("Invalid boolean encoding: expected 0 or 1, got 42", exception.Message, StringComparison.Ordinal);
         }
 
@@ -129,7 +129,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadBooleanStrict(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadBooleanStrict(buffer, out _));
             Assert.Contains("Buffer too small for boolean", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -146,7 +146,7 @@ namespace Serializer.Runtime.Tests
             var testValue = (byte)0xAB;
 
             // Act
-            var bytesWritten = BinarySerializer.WriteByte(buffer, testValue);
+            var bytesWritten = RndCodec.WriteByte(buffer, testValue);
 
             // Assert
             Assert.Equal(1, bytesWritten);
@@ -161,7 +161,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[] { testValue };
 
             // Act
-            var bytesRead = BinarySerializer.ReadByte(buffer, out var value);
+            var bytesRead = RndCodec.ReadByte(buffer, out var value);
 
             // Assert
             Assert.Equal(1, bytesRead);
@@ -175,7 +175,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteByte(buffer, 0x12));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteByte(buffer, 0x12));
             Assert.Contains("Buffer too small for byte", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -187,7 +187,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadByte(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadByte(buffer, out _));
             Assert.Contains("Buffer too small for byte", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -204,7 +204,7 @@ namespace Serializer.Runtime.Tests
             var testValue = (sbyte)-42;
 
             // Act
-            var bytesWritten = BinarySerializer.WriteSByte(buffer, testValue);
+            var bytesWritten = RndCodec.WriteSByte(buffer, testValue);
 
             // Assert
             Assert.Equal(1, bytesWritten);
@@ -219,7 +219,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[] { (byte)testValue };
 
             // Act
-            var bytesRead = BinarySerializer.ReadSByte(buffer, out var value);
+            var bytesRead = RndCodec.ReadSByte(buffer, out var value);
 
             // Assert
             Assert.Equal(1, bytesRead);
@@ -233,7 +233,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteSByte(buffer, (sbyte)-1));
+            var ex = Assert.Throws<ArgumentException>(() => RndCodec.WriteSByte(buffer, (sbyte)-1));
             Assert.Contains("Buffer too small for sbyte", ex.Message, StringComparison.Ordinal);
             Assert.Equal("destination", ex.ParamName);
         }
@@ -245,7 +245,7 @@ namespace Serializer.Runtime.Tests
             var buffer = Array.Empty<byte>();
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadSByte(buffer, out _));
+            var ex = Assert.Throws<ArgumentException>(() => RndCodec.ReadSByte(buffer, out _));
             Assert.Contains("Buffer too small for sbyte", ex.Message, StringComparison.Ordinal);
             Assert.Equal("source", ex.ParamName);
         }
@@ -266,11 +266,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[2];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteInt16(buffer, testValue);
+            var bytesWritten = RndCodec.WriteInt16(buffer, testValue);
             Assert.Equal(2, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadInt16(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadInt16(buffer, out var readValue);
 
             // Assert
             Assert.Equal(2, bytesRead);
@@ -284,7 +284,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteInt16(buffer, 12345));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteInt16(buffer, 12345));
             Assert.Contains("Buffer too small for Int16", exception.Message, StringComparison.Ordinal);
         }
 
@@ -302,11 +302,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[2];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteUInt16(buffer, testValue);
+            var bytesWritten = RndCodec.WriteUInt16(buffer, testValue);
             Assert.Equal(2, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadUInt16(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadUInt16(buffer, out var readValue);
 
             // Assert
             Assert.Equal(2, bytesRead);
@@ -320,7 +320,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteUInt16(buffer, 12345));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteUInt16(buffer, 12345));
             Assert.Contains("Buffer too small for UInt16", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -332,7 +332,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadUInt16(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadUInt16(buffer, out _));
             Assert.Contains("Buffer too small for UInt16", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -353,11 +353,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[4];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteInt32(buffer, testValue);
+            var bytesWritten = RndCodec.WriteInt32(buffer, testValue);
             Assert.Equal(4, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadInt32(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadInt32(buffer, out var readValue);
 
             // Assert
             Assert.Equal(4, bytesRead);
@@ -371,7 +371,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[3];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteInt32(buffer, 123456789));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteInt32(buffer, 123456789));
             Assert.Contains("Buffer too small for Int32", exception.Message, StringComparison.Ordinal);
         }
 
@@ -389,11 +389,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[4];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteUInt32(buffer, testValue);
+            var bytesWritten = RndCodec.WriteUInt32(buffer, testValue);
             Assert.Equal(4, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadUInt32(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadUInt32(buffer, out var readValue);
 
             // Assert
             Assert.Equal(4, bytesRead);
@@ -407,7 +407,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[3];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteUInt32(buffer, 123456789U));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteUInt32(buffer, 123456789U));
             Assert.Contains("Buffer too small for UInt32", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -419,7 +419,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[3];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadUInt32(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadUInt32(buffer, out _));
             Assert.Contains("Buffer too small for UInt32", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -440,11 +440,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[8];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteInt64(buffer, testValue);
+            var bytesWritten = RndCodec.WriteInt64(buffer, testValue);
             Assert.Equal(8, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadInt64(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadInt64(buffer, out var readValue);
 
             // Assert
             Assert.Equal(8, bytesRead);
@@ -458,7 +458,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[7];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteInt64(buffer, 1234567890123456789L));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteInt64(buffer, 1234567890123456789L));
             Assert.Contains("Buffer too small for Int64", exception.Message, StringComparison.Ordinal);
         }
 
@@ -476,11 +476,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[8];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteUInt64(buffer, testValue);
+            var bytesWritten = RndCodec.WriteUInt64(buffer, testValue);
             Assert.Equal(8, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadUInt64(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadUInt64(buffer, out var readValue);
 
             // Assert
             Assert.Equal(8, bytesRead);
@@ -494,7 +494,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[7];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteUInt64(buffer, 1234567890123456789UL));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteUInt64(buffer, 1234567890123456789UL));
             Assert.Contains("Buffer too small for UInt64", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -506,7 +506,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[7];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadUInt64(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadUInt64(buffer, out _));
             Assert.Contains("Buffer too small for UInt64", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -528,11 +528,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[4];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteSingle(buffer, testValue);
+            var bytesWritten = RndCodec.WriteSingle(buffer, testValue);
             Assert.Equal(4, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadSingle(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadSingle(buffer, out var readValue);
 
             // Assert
             Assert.Equal(4, bytesRead);
@@ -546,7 +546,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[3];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteSingle(buffer, 3.14159f));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteSingle(buffer, 3.14159f));
             Assert.Contains("Buffer too small for Single", exception.Message, StringComparison.Ordinal);
         }
 
@@ -556,18 +556,18 @@ namespace Serializer.Runtime.Tests
             var buf = new byte[4];
 
             // Test NaN
-            Assert.Equal(4, BinarySerializer.WriteSingle(buf, float.NaN));
-            BinarySerializer.ReadSingle(buf, out var fNaN);
+            Assert.Equal(4, RndCodec.WriteSingle(buf, float.NaN));
+            RndCodec.ReadSingle(buf, out var fNaN);
             Assert.True(float.IsNaN(fNaN));
 
             // Test Positive Infinity
-            Assert.Equal(4, BinarySerializer.WriteSingle(buf, float.PositiveInfinity));
-            BinarySerializer.ReadSingle(buf, out var fPosInf);
+            Assert.Equal(4, RndCodec.WriteSingle(buf, float.PositiveInfinity));
+            RndCodec.ReadSingle(buf, out var fPosInf);
             Assert.True(float.IsPositiveInfinity(fPosInf));
 
             // Test Negative Infinity
-            Assert.Equal(4, BinarySerializer.WriteSingle(buf, float.NegativeInfinity));
-            BinarySerializer.ReadSingle(buf, out var fNegInf);
+            Assert.Equal(4, RndCodec.WriteSingle(buf, float.NegativeInfinity));
+            RndCodec.ReadSingle(buf, out var fNegInf);
             Assert.True(float.IsNegativeInfinity(fNegInf));
         }
 
@@ -588,11 +588,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[8];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteDouble(buffer, testValue);
+            var bytesWritten = RndCodec.WriteDouble(buffer, testValue);
             Assert.Equal(8, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadDouble(buffer, out var readValue);
+            var bytesRead = RndCodec.ReadDouble(buffer, out var readValue);
 
             // Assert
             Assert.Equal(8, bytesRead);
@@ -606,7 +606,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[7];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteDouble(buffer, 3.141592653589793));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteDouble(buffer, 3.141592653589793));
             Assert.Contains("Buffer too small for Double", exception.Message, StringComparison.Ordinal);
         }
 
@@ -616,18 +616,18 @@ namespace Serializer.Runtime.Tests
             var buf = new byte[8];
 
             // Test NaN
-            Assert.Equal(8, BinarySerializer.WriteDouble(buf, double.NaN));
-            BinarySerializer.ReadDouble(buf, out var dNaN);
+            Assert.Equal(8, RndCodec.WriteDouble(buf, double.NaN));
+            RndCodec.ReadDouble(buf, out var dNaN);
             Assert.True(double.IsNaN(dNaN));
 
             // Test Positive Infinity
-            Assert.Equal(8, BinarySerializer.WriteDouble(buf, double.PositiveInfinity));
-            BinarySerializer.ReadDouble(buf, out var dPosInf);
+            Assert.Equal(8, RndCodec.WriteDouble(buf, double.PositiveInfinity));
+            RndCodec.ReadDouble(buf, out var dPosInf);
             Assert.True(double.IsPositiveInfinity(dPosInf));
 
             // Test Negative Infinity
-            Assert.Equal(8, BinarySerializer.WriteDouble(buf, double.NegativeInfinity));
-            BinarySerializer.ReadDouble(buf, out var dNegInf);
+            Assert.Equal(8, RndCodec.WriteDouble(buf, double.NegativeInfinity));
+            RndCodec.ReadDouble(buf, out var dNegInf);
             Assert.True(double.IsNegativeInfinity(dNegInf));
         }
 
@@ -643,11 +643,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[16];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteGuid(buffer, testGuid);
+            var bytesWritten = RndCodec.WriteGuid(buffer, testGuid);
             Assert.Equal(16, bytesWritten);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadGuid(buffer, out var readGuid);
+            var bytesRead = RndCodec.ReadGuid(buffer, out var readGuid);
 
             // Assert
             Assert.Equal(16, bytesRead);
@@ -662,7 +662,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[16];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteGuid(buffer, emptyGuid);
+            var bytesWritten = RndCodec.WriteGuid(buffer, emptyGuid);
 
             // Assert
             Assert.Equal(16, bytesWritten);
@@ -681,7 +681,7 @@ namespace Serializer.Runtime.Tests
             var testGuid = Guid.NewGuid();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteGuid(buffer, testGuid));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteGuid(buffer, testGuid));
             Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
         }
 
@@ -692,7 +692,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[15];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadGuid(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadGuid(buffer, out _));
             Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
         }
 
@@ -704,11 +704,11 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[16];
 
             // Act - Write RFC 4122
-            var bytesWritten = BinarySerializer.WriteGuidRfc4122(buffer, testGuid);
+            var bytesWritten = RndCodec.WriteGuidRfc4122(buffer, testGuid);
             Assert.Equal(16, bytesWritten);
 
             // Act - Read RFC 4122
-            var bytesRead = BinarySerializer.ReadGuidRfc4122(buffer, out var readGuid);
+            var bytesRead = RndCodec.ReadGuidRfc4122(buffer, out var readGuid);
 
             // Assert
             Assert.Equal(16, bytesRead);
@@ -723,7 +723,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[16];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteGuidRfc4122(buffer, emptyGuid);
+            var bytesWritten = RndCodec.WriteGuidRfc4122(buffer, emptyGuid);
 
             // Assert
             Assert.Equal(16, bytesWritten);
@@ -742,7 +742,7 @@ namespace Serializer.Runtime.Tests
             var testGuid = Guid.NewGuid();
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteGuidRfc4122(buffer, testGuid));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteGuidRfc4122(buffer, testGuid));
             Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
         }
 
@@ -753,7 +753,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[15];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadGuidRfc4122(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadGuidRfc4122(buffer, out _));
             Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
         }
 
@@ -766,8 +766,8 @@ namespace Serializer.Runtime.Tests
             var rfc4122Buffer = new byte[16];
 
             // Act - Write using both methods
-            BinarySerializer.WriteGuid(standardBuffer, testGuid);
-            BinarySerializer.WriteGuidRfc4122(rfc4122Buffer, testGuid);
+            RndCodec.WriteGuid(standardBuffer, testGuid);
+            RndCodec.WriteGuidRfc4122(rfc4122Buffer, testGuid);
 
             // Assert - RFC 4122 bytes are the reversals of .NET layout for the first 4/2/2 segments
             var first4 = standardBuffer.AsSpan(0, 4).ToArray();
@@ -799,21 +799,21 @@ namespace Serializer.Runtime.Tests
             // Test that all methods return the expected byte counts
             var buffer = new byte[32];
 
-            Assert.Equal(1, BinarySerializer.WriteBoolean(buffer, true));
-            Assert.Equal(1, BinarySerializer.WriteByte(buffer, 0x42));
-            Assert.Equal(1, BinarySerializer.WriteSByte(buffer, -42));
-            Assert.Equal(2, BinarySerializer.WriteInt16(buffer, 12345));
-            Assert.Equal(2, BinarySerializer.WriteUInt16(buffer, 54321));
-            Assert.Equal(4, BinarySerializer.WriteInt32(buffer, 123456789));
-            Assert.Equal(4, BinarySerializer.WriteUInt32(buffer, 987654321));
-            Assert.Equal(8, BinarySerializer.WriteInt64(buffer, 1234567890123456789L));
-            Assert.Equal(8, BinarySerializer.WriteUInt64(buffer, 9876543210987654321UL));
-            Assert.Equal(4, BinarySerializer.WriteSingle(buffer, 3.14159f));
-            Assert.Equal(8, BinarySerializer.WriteDouble(buffer, 3.141592653589793));
-            Assert.Equal(16, BinarySerializer.WriteGuid(buffer, Guid.NewGuid()));
-            Assert.Equal(16, BinarySerializer.WriteGuidRfc4122(buffer, Guid.NewGuid()));
-            Assert.Equal(2, BinarySerializer.WriteString(buffer, ""));
-            Assert.Equal(4, BinarySerializer.WriteString(buffer, "Hi"));
+            Assert.Equal(1, RndCodec.WriteBoolean(buffer, true));
+            Assert.Equal(1, RndCodec.WriteByte(buffer, 0x42));
+            Assert.Equal(1, RndCodec.WriteSByte(buffer, -42));
+            Assert.Equal(2, RndCodec.WriteInt16(buffer, 12345));
+            Assert.Equal(2, RndCodec.WriteUInt16(buffer, 54321));
+            Assert.Equal(4, RndCodec.WriteInt32(buffer, 123456789));
+            Assert.Equal(4, RndCodec.WriteUInt32(buffer, 987654321));
+            Assert.Equal(8, RndCodec.WriteInt64(buffer, 1234567890123456789L));
+            Assert.Equal(8, RndCodec.WriteUInt64(buffer, 9876543210987654321UL));
+            Assert.Equal(4, RndCodec.WriteSingle(buffer, 3.14159f));
+            Assert.Equal(8, RndCodec.WriteDouble(buffer, 3.141592653589793));
+            Assert.Equal(16, RndCodec.WriteGuid(buffer, Guid.NewGuid()));
+            Assert.Equal(16, RndCodec.WriteGuidRfc4122(buffer, Guid.NewGuid()));
+            Assert.Equal(2, RndCodec.WriteString(buffer, ""));
+            Assert.Equal(4, RndCodec.WriteString(buffer, "Hi"));
         }
 
         [Fact]
@@ -823,20 +823,20 @@ namespace Serializer.Runtime.Tests
             var span = buffer.AsSpan();
 
             // Test min/max values for each type
-            BinarySerializer.WriteInt16(span, short.MinValue);
-            BinarySerializer.WriteInt16(span.Slice(2), short.MaxValue);
-            BinarySerializer.WriteInt32(span.Slice(4), int.MinValue);
-            BinarySerializer.WriteInt32(span.Slice(8), int.MaxValue);
-            BinarySerializer.WriteInt64(span.Slice(12), long.MinValue);
-            BinarySerializer.WriteInt64(span.Slice(20), long.MaxValue);
+            RndCodec.WriteInt16(span, short.MinValue);
+            RndCodec.WriteInt16(span.Slice(2), short.MaxValue);
+            RndCodec.WriteInt32(span.Slice(4), int.MinValue);
+            RndCodec.WriteInt32(span.Slice(8), int.MaxValue);
+            RndCodec.WriteInt64(span.Slice(12), long.MinValue);
+            RndCodec.WriteInt64(span.Slice(20), long.MaxValue);
 
             // Read back and verify
-            BinarySerializer.ReadInt16(span, out var minInt16);
-            BinarySerializer.ReadInt16(span.Slice(2), out var maxInt16);
-            BinarySerializer.ReadInt32(span.Slice(4), out var minInt32);
-            BinarySerializer.ReadInt32(span.Slice(8), out var maxInt32);
-            BinarySerializer.ReadInt64(span.Slice(12), out var minInt64);
-            BinarySerializer.ReadInt64(span.Slice(20), out var maxInt64);
+            RndCodec.ReadInt16(span, out var minInt16);
+            RndCodec.ReadInt16(span.Slice(2), out var maxInt16);
+            RndCodec.ReadInt32(span.Slice(4), out var minInt32);
+            RndCodec.ReadInt32(span.Slice(8), out var maxInt32);
+            RndCodec.ReadInt64(span.Slice(12), out var minInt64);
+            RndCodec.ReadInt64(span.Slice(20), out var maxInt64);
 
             Assert.Equal(short.MinValue, minInt16);
             Assert.Equal(short.MaxValue, maxInt16);
@@ -857,7 +857,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[2];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteString(buffer, null);
+            var bytesWritten = RndCodec.WriteString(buffer, null);
 
             // Assert
             Assert.Equal(2, bytesWritten);
@@ -871,7 +871,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[2];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteString(buffer, string.Empty);
+            var bytesWritten = RndCodec.WriteString(buffer, string.Empty);
 
             // Assert
             Assert.Equal(2, bytesWritten);
@@ -886,7 +886,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[20];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+            var bytesWritten = RndCodec.WriteString(buffer, testString);
 
             // Assert
             Assert.Equal(2 + testString.Length, bytesWritten);
@@ -903,7 +903,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[50];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+            var bytesWritten = RndCodec.WriteString(buffer, testString);
 
             // Assert
             Assert.Equal(2 + Encoding.UTF8.GetByteCount(testString), bytesWritten);
@@ -921,7 +921,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[ushort.MaxValue + 2];
 
             // Act
-            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+            var bytesWritten = RndCodec.WriteString(buffer, testString);
 
             // Assert
             Assert.Equal(2 + ushort.MaxValue, bytesWritten);
@@ -936,7 +936,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[ushort.MaxValue + 3];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, testString));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteString(buffer, testString));
             Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
             Assert.Equal("value", exception.ParamName);
         }
@@ -948,7 +948,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, "test"));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteString(buffer, "test"));
             Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -960,7 +960,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[3]; // Only enough for length prefix + 1 byte
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, "test"));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.WriteString(buffer, "test"));
             Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
@@ -973,7 +973,7 @@ namespace Serializer.Runtime.Tests
             BinaryPrimitives.WriteUInt16LittleEndian(buffer, 0);
 
             // Act
-            var bytesRead = BinarySerializer.ReadString(buffer, out var value);
+            var bytesRead = RndCodec.ReadString(buffer, out var value);
 
             // Assert
             Assert.Equal(2, bytesRead);
@@ -990,7 +990,7 @@ namespace Serializer.Runtime.Tests
             Encoding.UTF8.GetBytes(testString).CopyTo(buffer, 2);
 
             // Act
-            var bytesRead = BinarySerializer.ReadString(buffer, out var value);
+            var bytesRead = RndCodec.ReadString(buffer, out var value);
 
             // Assert
             Assert.Equal(2 + testString.Length, bytesRead);
@@ -1008,7 +1008,7 @@ namespace Serializer.Runtime.Tests
             stringBytes.CopyTo(buffer, 2);
 
             // Act
-            var bytesRead = BinarySerializer.ReadString(buffer, out var value);
+            var bytesRead = RndCodec.ReadString(buffer, out var value);
 
             // Assert
             Assert.Equal(2 + stringBytes.Length, bytesRead);
@@ -1022,7 +1022,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[1];
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadString(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadString(buffer, out _));
             Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -1035,7 +1035,7 @@ namespace Serializer.Runtime.Tests
             BinaryPrimitives.WriteUInt16LittleEndian(buffer, 10); // Claim string is 10 bytes
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadString(buffer, out _));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.ReadString(buffer, out _));
             Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
@@ -1048,10 +1048,10 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[100];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+            var bytesWritten = RndCodec.WriteString(buffer, testString);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+            var bytesRead = RndCodec.ReadString(buffer, out var readString);
 
             // Assert
             Assert.Equal(bytesWritten, bytesRead);
@@ -1065,10 +1065,10 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[2];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteString(buffer, null);
+            var bytesWritten = RndCodec.WriteString(buffer, null);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+            var bytesRead = RndCodec.ReadString(buffer, out var readString);
 
             // Assert
             Assert.Equal(2, bytesWritten);
@@ -1083,10 +1083,10 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[2];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteString(buffer, string.Empty);
+            var bytesWritten = RndCodec.WriteString(buffer, string.Empty);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+            var bytesRead = RndCodec.ReadString(buffer, out var readString);
 
             // Assert
             Assert.Equal(2, bytesWritten);
@@ -1102,10 +1102,10 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[ushort.MaxValue + 2];
 
             // Act - Write
-            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+            var bytesWritten = RndCodec.WriteString(buffer, testString);
 
             // Act - Read
-            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+            var bytesRead = RndCodec.ReadString(buffer, out var readString);
 
             // Assert
             Assert.Equal(2 + ushort.MaxValue, bytesWritten);
@@ -1120,7 +1120,7 @@ namespace Serializer.Runtime.Tests
             var buffer = new byte[] { 0x02, 0x00, 0xC3, 0x28 };
 
             // Act & Assert
-            Assert.Throws<DecoderFallbackException>(() => BinarySerializer.ReadString(buffer, out _));
+            Assert.Throws<DecoderFallbackException>(() => RndCodec.ReadString(buffer, out _));
         }
 
         [Fact]
@@ -1132,8 +1132,8 @@ namespace Serializer.Runtime.Tests
             {
                 var s = CreateRandomUnicodeString(rnd, maxChars: 100);
                 var buf = new byte[2 + Encoding.UTF8.GetByteCount(s)];
-                var written = BinarySerializer.WriteString(buf, s);
-                var read = BinarySerializer.ReadString(buf, out var back);
+                var written = RndCodec.WriteString(buf, s);
+                var read = RndCodec.ReadString(buf, out var back);
                 Assert.Equal(written, read);
                 Assert.Equal(s, back);
             }
@@ -1162,17 +1162,17 @@ namespace Serializer.Runtime.Tests
         public void GetStringSerializedSize_ReturnsCorrectSizes()
         {
             // Test null and empty strings
-            Assert.Equal(2, BinarySerializer.GetStringSerializedSize(null));
-            Assert.Equal(2, BinarySerializer.GetStringSerializedSize(string.Empty));
+            Assert.Equal(2, RndCodec.GetStringSerializedSize(null));
+            Assert.Equal(2, RndCodec.GetStringSerializedSize(string.Empty));
 
             // Test simple ASCII strings
-            Assert.Equal(4, BinarySerializer.GetStringSerializedSize("Hi"));
-            Assert.Equal(15, BinarySerializer.GetStringSerializedSize("Hello, World!"));
+            Assert.Equal(4, RndCodec.GetStringSerializedSize("Hi"));
+            Assert.Equal(15, RndCodec.GetStringSerializedSize("Hello, World!"));
 
             // Test Unicode strings
             var unicodeString = "Hello, 世界! 🌍";
             var expectedSize = 2 + Encoding.UTF8.GetByteCount(unicodeString);
-            Assert.Equal(expectedSize, BinarySerializer.GetStringSerializedSize(unicodeString));
+            Assert.Equal(expectedSize, RndCodec.GetStringSerializedSize(unicodeString));
         }
 
         [Fact]
@@ -1182,7 +1182,7 @@ namespace Serializer.Runtime.Tests
             var testString = new string('A', ushort.MaxValue + 1);
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.GetStringSerializedSize(testString));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.GetStringSerializedSize(testString));
             Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
             Assert.Equal("value", exception.ParamName);
         }
@@ -1195,10 +1195,10 @@ namespace Serializer.Runtime.Tests
             var buf = new byte[2 + Encoding.UTF8.GetByteCount(s)];
 
             // Act - Write
-            var written = BinarySerializer.WriteString(buf, s);
+            var written = RndCodec.WriteString(buf, s);
 
             // Act - Read
-            var read = BinarySerializer.ReadString(buf, out var back);
+            var read = RndCodec.ReadString(buf, out var back);
 
             // Assert
             Assert.Equal(written, read);
@@ -1214,7 +1214,7 @@ namespace Serializer.Runtime.Tests
             var s = string.Join("", Enumerable.Repeat(emoji, 17000)); // 17000 * 4 = 68000 bytes > 65535
 
             // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.GetStringSerializedSize(s));
+            var exception = Assert.Throws<ArgumentException>(() => RndCodec.GetStringSerializedSize(s));
             Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
             Assert.Equal("value", exception.ParamName);
         }

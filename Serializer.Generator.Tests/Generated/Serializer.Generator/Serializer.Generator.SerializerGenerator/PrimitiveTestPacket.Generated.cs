@@ -57,57 +57,151 @@ namespace Serializer.Generator.Tests
         {
             var offset = 0;
 
-            // Write Id key and value
+            // Write Id key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt64(destination.Slice(offset), Id);
+            // Write flag indicating if value is default
+            var hasIdValue = Id != 0L;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIdValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt64(destination.Slice(offset), Id);
+            }
 
-            // Write ByteValue key and value
+            // Write ByteValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), ByteValue);
+            // Write flag indicating if value is default
+            var hasByteValueValue = ByteValue != (byte)0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasByteValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasByteValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), ByteValue);
+            }
 
-            // Write SByteValue key and value
+            // Write SByteValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
-            offset += Serializer.Runtime.BinarySerializer.WriteSByte(destination.Slice(offset), SByteValue);
+            // Write flag indicating if value is default
+            var hasSByteValueValue = SByteValue != (sbyte)0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasSByteValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasSByteValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteSByte(destination.Slice(offset), SByteValue);
+            }
 
-            // Write ShortValue key and value
+            // Write ShortValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 3);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt16(destination.Slice(offset), ShortValue);
+            // Write flag indicating if value is default
+            var hasShortValueValue = ShortValue != (short)0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasShortValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasShortValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt16(destination.Slice(offset), ShortValue);
+            }
 
-            // Write UShortValue key and value
+            // Write UShortValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
-            offset += Serializer.Runtime.BinarySerializer.WriteUInt16(destination.Slice(offset), UShortValue);
+            // Write flag indicating if value is default
+            var hasUShortValueValue = UShortValue != (ushort)0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasUShortValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasUShortValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteUInt16(destination.Slice(offset), UShortValue);
+            }
 
-            // Write IntValue key and value
+            // Write IntValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 5);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), IntValue);
+            // Write flag indicating if value is default
+            var hasIntValueValue = IntValue != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIntValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIntValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), IntValue);
+            }
 
-            // Write UIntValue key and value
+            // Write UIntValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 6);
-            offset += Serializer.Runtime.BinarySerializer.WriteUInt32(destination.Slice(offset), UIntValue);
+            // Write flag indicating if value is default
+            var hasUIntValueValue = UIntValue != 0U;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasUIntValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasUIntValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteUInt32(destination.Slice(offset), UIntValue);
+            }
 
-            // Write LongValue key and value
+            // Write LongValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 7);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt64(destination.Slice(offset), LongValue);
+            // Write flag indicating if value is default
+            var hasLongValueValue = LongValue != 0L;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasLongValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasLongValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt64(destination.Slice(offset), LongValue);
+            }
 
-            // Write ULongValue key and value
+            // Write ULongValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 8);
-            offset += Serializer.Runtime.BinarySerializer.WriteUInt64(destination.Slice(offset), ULongValue);
+            // Write flag indicating if value is default
+            var hasULongValueValue = ULongValue != 0UL;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasULongValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasULongValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteUInt64(destination.Slice(offset), ULongValue);
+            }
 
-            // Write FloatValue key and value
+            // Write FloatValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 9);
-            offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), FloatValue);
+            // Write flag indicating if value is default
+            var hasFloatValueValue = FloatValue != 0f;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasFloatValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasFloatValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), FloatValue);
+            }
 
-            // Write DoubleValue key and value
+            // Write DoubleValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 10);
-            offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), DoubleValue);
+            // Write flag indicating if value is default
+            var hasDoubleValueValue = DoubleValue != 0d;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasDoubleValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasDoubleValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), DoubleValue);
+            }
 
-            // Write BoolValue key and value
+            // Write BoolValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 11);
-            offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), BoolValue);
+            // Write flag indicating if value is default
+            var hasBoolValueValue = BoolValue != false;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasBoolValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasBoolValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), BoolValue);
+            }
 
-            // Write StringValue key and value
+            // Write StringValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 12);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), StringValue);
+            // Write flag indicating if value is default
+            var hasStringValueValue = !string.IsNullOrEmpty(StringValue);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasStringValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasStringValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), StringValue);
+            }
+
+            // Write terminator byte
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
 
             return offset;
         }
@@ -129,132 +223,203 @@ namespace Serializer.Generator.Tests
                 value = new PrimitiveTestPacket();
                 var offset = 0;
 
-                // Read properties in key-value format
+                // Read properties in key-flag-value format until terminator
                 while (offset < source.Length)
                 {
-                    // Read property key
-                    if (offset >= source.Length) break;
+                    // Check if we have enough data for key and flag
+                    if (offset + 2 > source.Length) break;
+
+                    // Read property key and flag
                     var propertyKey = source[offset];
-                    offset++;
+                    var hasValue = source[offset + 1] != 0;
+                    offset += 2;
+
+                    // Check for terminator
+                    if (propertyKey == 0xFF) break;
 
                     // Process property based on key
                     switch (propertyKey)
                     {
                         case 0: // Id
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt64(source.Slice(offset), out var IdValue);
-                                value.Id = IdValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 8 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt64(source.Slice(offset), out var IdValue);
+                                    value.Id = IdValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 1: // ByteValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadByte(source.Slice(offset), out var ByteValueValue);
-                                value.ByteValue = ByteValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 1 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadByte(source.Slice(offset), out var ByteValueValue);
+                                    value.ByteValue = ByteValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 2: // SByteValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadSByte(source.Slice(offset), out var SByteValueValue);
-                                value.SByteValue = SByteValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 1 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadSByte(source.Slice(offset), out var SByteValueValue);
+                                    value.SByteValue = SByteValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 3: // ShortValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt16(source.Slice(offset), out var ShortValueValue);
-                                value.ShortValue = ShortValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt16(source.Slice(offset), out var ShortValueValue);
+                                    value.ShortValue = ShortValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 4: // UShortValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadUInt16(source.Slice(offset), out var UShortValueValue);
-                                value.UShortValue = UShortValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadUInt16(source.Slice(offset), out var UShortValueValue);
+                                    value.UShortValue = UShortValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 5: // IntValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IntValueValue);
-                                value.IntValue = IntValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IntValueValue);
+                                    value.IntValue = IntValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 6: // UIntValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadUInt32(source.Slice(offset), out var UIntValueValue);
-                                value.UIntValue = UIntValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadUInt32(source.Slice(offset), out var UIntValueValue);
+                                    value.UIntValue = UIntValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 7: // LongValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt64(source.Slice(offset), out var LongValueValue);
-                                value.LongValue = LongValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 8 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt64(source.Slice(offset), out var LongValueValue);
+                                    value.LongValue = LongValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 8: // ULongValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadUInt64(source.Slice(offset), out var ULongValueValue);
-                                value.ULongValue = ULongValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 8 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadUInt64(source.Slice(offset), out var ULongValueValue);
+                                    value.ULongValue = ULongValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 9: // FloatValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var FloatValueValue);
-                                value.FloatValue = FloatValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var FloatValueValue);
+                                    value.FloatValue = FloatValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 10: // DoubleValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var DoubleValueValue);
-                                value.DoubleValue = DoubleValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 8 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var DoubleValueValue);
+                                    value.DoubleValue = DoubleValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 11: // BoolValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var BoolValueValue);
-                                value.BoolValue = BoolValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 1 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var BoolValueValue);
+                                    value.BoolValue = BoolValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 12: // StringValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var StringValueValue);
-                                value.StringValue = StringValueValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var StringValueValue);
+                                    value.StringValue = StringValueValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         default:
@@ -279,44 +444,99 @@ namespace Serializer.Generator.Tests
         {
             var size = 0;
 
-            // Id: 1 byte for key + value size
-            size += 1 + 8;
+            // Id: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (Id != 0L)
+            {
+                size += 8;
+            }
 
-            // ByteValue: 1 byte for key + value size
-            size += 1 + 1;
+            // ByteValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (ByteValue != (byte)0)
+            {
+                size += 1;
+            }
 
-            // SByteValue: 1 byte for key + value size
-            size += 1 + 1;
+            // SByteValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (SByteValue != (sbyte)0)
+            {
+                size += 1;
+            }
 
-            // ShortValue: 1 byte for key + value size
-            size += 1 + 2;
+            // ShortValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (ShortValue != (short)0)
+            {
+                size += 2;
+            }
 
-            // UShortValue: 1 byte for key + value size
-            size += 1 + 2;
+            // UShortValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (UShortValue != (ushort)0)
+            {
+                size += 2;
+            }
 
-            // IntValue: 1 byte for key + value size
-            size += 1 + 4;
+            // IntValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (IntValue != 0)
+            {
+                size += 4;
+            }
 
-            // UIntValue: 1 byte for key + value size
-            size += 1 + 4;
+            // UIntValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (UIntValue != 0U)
+            {
+                size += 4;
+            }
 
-            // LongValue: 1 byte for key + value size
-            size += 1 + 8;
+            // LongValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (LongValue != 0L)
+            {
+                size += 8;
+            }
 
-            // ULongValue: 1 byte for key + value size
-            size += 1 + 8;
+            // ULongValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (ULongValue != 0UL)
+            {
+                size += 8;
+            }
 
-            // FloatValue: 1 byte for key + value size
-            size += 1 + 4;
+            // FloatValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (FloatValue != 0f)
+            {
+                size += 4;
+            }
 
-            // DoubleValue: 1 byte for key + value size
-            size += 1 + 8;
+            // DoubleValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (DoubleValue != 0d)
+            {
+                size += 8;
+            }
 
-            // BoolValue: 1 byte for key + value size
-            size += 1 + 1;
+            // BoolValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (BoolValue != false)
+            {
+                size += 1;
+            }
 
-            // StringValue: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(StringValue);
+            // StringValue: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(StringValue))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(StringValue ?? "");
+            }
+
+            // 1 byte for terminator
+            size += 1;
 
             return size;
         }

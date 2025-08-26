@@ -275,21 +275,36 @@ namespace Serializer.Generator
             {
                 var propertyType = property.Type;
                 var propertyName = property.Name;
-
-                // Always write both key and value
+                
+                // Write property key, then flag indicating if value is default, then optionally write value
                 if (IsPrimitiveType(propertyType))
                 {
                     var writeMethod = GetPrimitiveWriteMethod(propertyType);
-                    codeBuilder.AppendLine($"            // Write {propertyName} key and value");
+                    var defaultValue = GetDefaultValue(propertyType);
+                    codeBuilder.AppendLine($"            // Write {propertyName} key");
                     codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), {propertyName});");
+                    codeBuilder.AppendLine($"            // Write flag indicating if value is default");
+                    codeBuilder.AppendLine($"            var has{propertyName}Value = {propertyName} != {defaultValue};");
+                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), has{propertyName}Value ? (byte)1 : (byte)0);");
+                    codeBuilder.AppendLine($"            // Write value only if not default");
+                    codeBuilder.AppendLine($"            if (has{propertyName}Value)");
+                    codeBuilder.AppendLine("            {");
+                    codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), {propertyName});");
+                    codeBuilder.AppendLine("            }");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.SpecialType == SpecialType.System_String)
                 {
-                    codeBuilder.AppendLine($"            // Write {propertyName} key and value");
+                    codeBuilder.AppendLine($"            // Write {propertyName} key");
                     codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), {propertyName});");
+                    codeBuilder.AppendLine($"            // Write flag indicating if value is default");
+                    codeBuilder.AppendLine($"            var has{propertyName}Value = !string.IsNullOrEmpty({propertyName});");
+                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), has{propertyName}Value ? (byte)1 : (byte)0);");
+                    codeBuilder.AppendLine($"            // Write value only if not default");
+                    codeBuilder.AppendLine($"            if (has{propertyName}Value)");
+                    codeBuilder.AppendLine("            {");
+                    codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), {propertyName});");
+                    codeBuilder.AppendLine("            }");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.TypeKind == TypeKind.Enum)
@@ -298,13 +313,26 @@ namespace Serializer.Generator
                     if (underlyingType != null)
                     {
                         var writeMethod = GetPrimitiveWriteMethod(underlyingType);
-                        codeBuilder.AppendLine($"            // Write {propertyName} key and value");
+                        var defaultValue = GetDefaultValue(underlyingType);
+                        codeBuilder.AppendLine($"            // Write {propertyName} key");
                         codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                        codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), ({underlyingType.Name}){propertyName});");
+                        codeBuilder.AppendLine($"            // Write flag indicating if value is default");
+                        codeBuilder.AppendLine($"            var has{propertyName}Value = ({underlyingType.Name}){propertyName} != {defaultValue};");
+                        codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), has{propertyName}Value ? (byte)1 : (byte)0);");
+                        codeBuilder.AppendLine($"            // Write value only if not default");
+                        codeBuilder.AppendLine($"            if (has{propertyName}Value)");
+                        codeBuilder.AppendLine("            {");
+                        codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), ({underlyingType.Name}){propertyName});");
+                        codeBuilder.AppendLine("            }");
                         codeBuilder.AppendLine();
                     }
                 }
             }
+
+            // Write terminator byte
+            codeBuilder.AppendLine("            // Write terminator byte");
+            codeBuilder.AppendLine("            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);");
+            codeBuilder.AppendLine();
 
             codeBuilder.AppendLine("            return offset;");
             codeBuilder.AppendLine("        }");
@@ -333,13 +361,19 @@ namespace Serializer.Generator
             codeBuilder.AppendLine($"                value = new {typeSymbol.Name}();");
             codeBuilder.AppendLine("                var offset = 0;");
             codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                // Read properties in key-value format");
+            codeBuilder.AppendLine("                // Read properties in key-flag-value format until terminator");
             codeBuilder.AppendLine("                while (offset < source.Length)");
             codeBuilder.AppendLine("                {");
-            codeBuilder.AppendLine("                    // Read property key");
-            codeBuilder.AppendLine("                    if (offset >= source.Length) break;");
+            codeBuilder.AppendLine("                    // Check if we have enough data for key and flag");
+            codeBuilder.AppendLine("                    if (offset + 2 > source.Length) break;");
+            codeBuilder.AppendLine();
+            codeBuilder.AppendLine("                    // Read property key and flag");
             codeBuilder.AppendLine("                    var propertyKey = source[offset];");
-            codeBuilder.AppendLine("                    offset++;");
+            codeBuilder.AppendLine("                    var hasValue = source[offset + 1] != 0;");
+            codeBuilder.AppendLine("                    offset += 2;");
+            codeBuilder.AppendLine();
+            codeBuilder.AppendLine("                    // Check for terminator");
+            codeBuilder.AppendLine("                    if (propertyKey == 0xFF) break;");
             codeBuilder.AppendLine();
             codeBuilder.AppendLine("                    // Process property based on key");
             codeBuilder.AppendLine("                    switch (propertyKey)");
@@ -358,22 +392,32 @@ namespace Serializer.Generator
                 {
                     var readMethod = GetPrimitiveReadMethod(propertyType);
                     codeBuilder.AppendLine("                        {");
-                    codeBuilder.AppendLine($"                            if (offset < source.Length)");
+                    codeBuilder.AppendLine($"                            if (hasValue)");
                     codeBuilder.AppendLine("                            {");
-                    codeBuilder.AppendLine($"                                offset += Serializer.Runtime.BinarySerializer.{readMethod}(source.Slice(offset), out var {propertyName}Value);");
-                    codeBuilder.AppendLine($"                                value.{propertyName} = {propertyName}Value;");
+                    codeBuilder.AppendLine($"                                // Check if there's enough data to read a value");
+                    codeBuilder.AppendLine($"                                if (offset + {GetPrimitiveTypeSize(propertyType)} <= source.Length)");
+                    codeBuilder.AppendLine("                                {");
+                    codeBuilder.AppendLine($"                                    offset += Serializer.Runtime.BinarySerializer.{readMethod}(source.Slice(offset), out var {propertyName}Value);");
+                    codeBuilder.AppendLine($"                                    value.{propertyName} = {propertyName}Value;");
+                    codeBuilder.AppendLine("                                }");
                     codeBuilder.AppendLine("                            }");
+                    codeBuilder.AppendLine("                            // If no value, keep default");
                     codeBuilder.AppendLine("                            break;");
                     codeBuilder.AppendLine("                        }");
                 }
                 else if (propertyType.SpecialType == SpecialType.System_String)
                 {
                     codeBuilder.AppendLine("                        {");
-                    codeBuilder.AppendLine($"                            if (offset < source.Length)");
+                    codeBuilder.AppendLine($"                            if (hasValue)");
                     codeBuilder.AppendLine("                            {");
-                    codeBuilder.AppendLine($"                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var {propertyName}Value);");
-                    codeBuilder.AppendLine($"                                value.{propertyName} = {propertyName}Value;");
+                    codeBuilder.AppendLine($"                                // Check if there's enough data to read a string (at least 2 bytes for length)");
+                    codeBuilder.AppendLine($"                                if (offset + 2 <= source.Length)");
+                    codeBuilder.AppendLine("                                {");
+                    codeBuilder.AppendLine($"                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var {propertyName}Value);");
+                    codeBuilder.AppendLine($"                                    value.{propertyName} = {propertyName}Value;");
+                    codeBuilder.AppendLine("                                }");
                     codeBuilder.AppendLine("                            }");
+                    codeBuilder.AppendLine("                            // If no value, keep default (null/empty)");
                     codeBuilder.AppendLine("                            break;");
                     codeBuilder.AppendLine("                        }");
                 }
@@ -384,11 +428,15 @@ namespace Serializer.Generator
                     {
                         var readMethod = GetPrimitiveReadMethod(underlyingType);
                         codeBuilder.AppendLine("                        {");
-                        codeBuilder.AppendLine($"                            if (offset < source.Length)");
+                        codeBuilder.AppendLine($"                            if (hasValue)");
                         codeBuilder.AppendLine("                            {");
-                        codeBuilder.AppendLine($"                                offset += Serializer.Runtime.BinarySerializer.{readMethod}(source.Slice(offset), out var {propertyName}Value);");
-                        codeBuilder.AppendLine($"                                value.{propertyName} = ({propertyType.Name}){propertyName}Value;");
+                        codeBuilder.AppendLine($"                                // Check if there's enough data to read a value");
+                        codeBuilder.AppendLine($"                                if (offset + {GetPrimitiveTypeSize(underlyingType)} <= source.Length)");
+                        codeBuilder.AppendLine("                                {");
+                        codeBuilder.AppendLine($"                                    offset += Serializer.Runtime.BinarySerializer.{readMethod}(source.Slice(offset), out var {propertyName}Value);");
+                        codeBuilder.AppendLine($"                                    value.{propertyName} = ({propertyType.Name}){propertyName}Value;");
                         codeBuilder.AppendLine("                            }");
+                        codeBuilder.AppendLine("                            // If no value, keep default");
                         codeBuilder.AppendLine("                            break;");
                         codeBuilder.AppendLine("                        }");
                     }
@@ -434,17 +482,26 @@ namespace Serializer.Generator
                 var propertyType = property.Type;
                 var propertyName = property.Name;
 
-                // Always count both key and value
+                // Always count 2 bytes (key + flag), but only count value size if not default
                 if (IsPrimitiveType(propertyType))
                 {
-                    codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key + value size");
-                    codeBuilder.AppendLine($"            size += 1 + {GetPrimitiveTypeSize(propertyType)};");
+                    var defaultValue = GetDefaultValue(propertyType);
+                    codeBuilder.AppendLine($"            // {propertyName}: 2 bytes (key + flag) + value size (if not default)");
+                    codeBuilder.AppendLine($"            size += 2; // Always count key and flag");
+                    codeBuilder.AppendLine($"            if ({propertyName} != {defaultValue})");
+                    codeBuilder.AppendLine("            {");
+                    codeBuilder.AppendLine($"                size += {GetPrimitiveTypeSize(propertyType)};");
+                    codeBuilder.AppendLine("            }");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.SpecialType == SpecialType.System_String)
                 {
-                    codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key + 2 bytes for length + string content");
-                    codeBuilder.AppendLine($"            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount({propertyName});");
+                    codeBuilder.AppendLine($"            // {propertyName}: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)");
+                    codeBuilder.AppendLine($"            size += 2; // Always count key and flag");
+                    codeBuilder.AppendLine($"            if (!string.IsNullOrEmpty({propertyName}))");
+                    codeBuilder.AppendLine("            {");
+                    codeBuilder.AppendLine($"                size += 2 + System.Text.Encoding.UTF8.GetByteCount({propertyName} ?? \"\");");
+                    codeBuilder.AppendLine("            }");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.TypeKind == TypeKind.Enum)
@@ -452,12 +509,22 @@ namespace Serializer.Generator
                     var underlyingType = ((INamedTypeSymbol)propertyType).EnumUnderlyingType;
                     if (underlyingType != null)
                     {
-                        codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key + value size");
-                        codeBuilder.AppendLine($"            size += 1 + {GetPrimitiveTypeSize(underlyingType)};");
+                        var defaultValue = GetDefaultValue(underlyingType);
+                        codeBuilder.AppendLine($"            // {propertyName}: 2 bytes (key + flag) + value size (if not default)");
+                        codeBuilder.AppendLine($"            size += 2; // Always count key and flag");
+                        codeBuilder.AppendLine($"            if (({underlyingType.Name}){propertyName} != {defaultValue})");
+                        codeBuilder.AppendLine("            {");
+                        codeBuilder.AppendLine($"                size += {GetPrimitiveTypeSize(underlyingType)};");
+                        codeBuilder.AppendLine("            }");
                         codeBuilder.AppendLine();
                     }
                 }
             }
+
+            // Add 1 byte for terminator
+            codeBuilder.AppendLine("            // 1 byte for terminator");
+            codeBuilder.AppendLine("            size += 1;");
+            codeBuilder.AppendLine();
 
             codeBuilder.AppendLine("            return size;");
             codeBuilder.AppendLine("        }");

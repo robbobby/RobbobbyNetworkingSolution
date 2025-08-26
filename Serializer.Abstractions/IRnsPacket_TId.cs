@@ -4,7 +4,7 @@ namespace Serializer.Abstractions
     /// Generic interface for network packets with a strongly-typed identifier.
     /// </summary>
     /// <typeparam name="TId">The type of the packet identifier.</typeparam>
-    public interface IRnsPacket<TId> : IRnsPacket where TId : notnull
+    public interface IRnsPacket<TId> : IRnsPacketField where TId : notnull
     {
         /// <summary>
         /// Gets the protocol identifier for this packet. Implementations may return a
@@ -13,4 +13,9 @@ namespace Serializer.Abstractions
         /// </summary>
         TId Id { get; }
     }
+
+    /// <summary>
+    /// Generic interface for network serialzable fields within a packet.
+    /// </summary>
+    public interface IRnsPacketField : IRnsPacket { }
 }

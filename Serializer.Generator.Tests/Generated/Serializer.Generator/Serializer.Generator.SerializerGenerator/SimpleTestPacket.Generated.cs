@@ -57,13 +57,30 @@ namespace Serializer.Generator.Tests
         {
             var offset = 0;
 
-            // Write Id key and value
+            // Write Id key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
+            // Write flag indicating if value is default
+            var hasIdValue = Id != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIdValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
+            }
 
-            // Write Name key and value
+            // Write Name key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), Name);
+            // Write flag indicating if value is default
+            var hasNameValue = !string.IsNullOrEmpty(Name);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasNameValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasNameValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), Name);
+            }
+
+            // Write terminator byte
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
 
             return offset;
         }
@@ -85,33 +102,49 @@ namespace Serializer.Generator.Tests
                 value = new SimpleTestPacket();
                 var offset = 0;
 
-                // Read properties in key-value format
+                // Read properties in key-flag-value format until terminator
                 while (offset < source.Length)
                 {
-                    // Read property key
-                    if (offset >= source.Length) break;
+                    // Check if we have enough data for key and flag
+                    if (offset + 2 > source.Length) break;
+
+                    // Read property key and flag
                     var propertyKey = source[offset];
-                    offset++;
+                    var hasValue = source[offset + 1] != 0;
+                    offset += 2;
+
+                    // Check for terminator
+                    if (propertyKey == 0xFF) break;
 
                     // Process property based on key
                     switch (propertyKey)
                     {
                         case 0: // Id
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
-                                value.Id = IdValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
+                                    value.Id = IdValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 1: // Name
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NameValue);
-                                value.Name = NameValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NameValue);
+                                    value.Name = NameValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         default:
@@ -136,11 +169,22 @@ namespace Serializer.Generator.Tests
         {
             var size = 0;
 
-            // Id: 1 byte for key + value size
-            size += 1 + 4;
+            // Id: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (Id != 0)
+            {
+                size += 4;
+            }
 
-            // Name: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(Name);
+            // Name: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(Name))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(Name ?? "");
+            }
+
+            // 1 byte for terminator
+            size += 1;
 
             return size;
         }

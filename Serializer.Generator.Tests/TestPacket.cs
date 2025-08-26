@@ -6,72 +6,70 @@ namespace Serializer.Generator.Tests
     /// Test packet for testing the source generator
     /// </summary>
     [RnsSerializable]
-    public partial class TestPacket : IRnsPacket<int>
+    public partial class TestPacket : IRnsPacket<PacketType>
     {
-        /// <summary>
-        /// Gets or sets the packet identifier
-        /// </summary>
-        public int Id { get; set; }
+        public static class Keys
+        {
+            public const int PlayerName = 1;
+            public const int X = 2;
+            public const int Y = 3;
+            public const int Health = 4;
+            public const int IsAlive = 5;
+            public const int FieldPacket = 6;
+        }
 
-        /// <summary>
-        /// Gets or sets the player name
-        /// </summary>
+        public PacketType Id => PacketType.Test;
         public string PlayerName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the X coordinate
-        /// </summary>
         public float X { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Y coordinate
-        /// </summary>
         public float Y { get; set; }
-
-        /// <summary>
-        /// Gets or sets the player health
-        /// </summary>
         public int Health { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the player is alive
-        /// </summary>
         public bool IsAlive { get; set; }
+        public TestFieldPacket? FieldPacket { get; set; }
+        public TestFieldPacket[] FieldPacketList { get; set; } = [];
+
+        public bool Write(Span<byte> buffer, out int bytesWritten)
+        {
+            // id does not have a key
+            // write method writing to the buffer using the keys, if anything is default value, empty string or null or empty length it doesn't write the key or the value.
+            throw new System.NotImplementedException();
+        }
+
+        public bool TryRead(ReadOnlySpan<byte> buffer, out TestPacket readPacket, out int bytesRead)
+        {
+            // we have already read the key
+            // reads from the buffer and creates a new TestPacket instance with the values present in the buffer
+            // if it has any fields in it, it calls the Field.TryRead method on the field to read the field
+            throw new System.NotImplementedException();
+        }
     }
 
-    /// <summary>
-    /// Test packet with enum values
-    /// </summary>
-    [RnsSerializable]
-    public partial class EnumTestPacket : IRnsPacket<byte>
+    public partial class TestFieldPacket : IRnsPacketField
     {
-        public enum PacketType
-        {
-            Unknown = 0,
-            Login = 1,
-            Logout = 2,
-            Chat = 3,
-            Movement = 4
-        }
-
-        public enum Status
-        {
-            Offline = 0,
-            Online = 1,
-            Away = 2,
-            Busy = 3
-        }
-
-        public byte Id { get; set; }
-        public PacketType Type { get; set; }
-        public Status UserStatus { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public int Timestamp { get; set; }
+        public string PlayerName { get; set; } = string.Empty;
+        public float X { get; set; }
+        public float Y { get; set; }
+        public int Health { get; set; }
+        public TestFieldPacket2? FieldPacket2 { get; set; }
     }
 
-    /// <summary>
-    /// Test packet with all primitive types
-    /// </summary>
+    public partial class TestFieldPacket2 : IRnsPacketField
+    {
+        public string PlayerName { get; set; } = string.Empty;
+        public float X { get; set; }
+        public float Y { get; set; }
+        public int Health { get; set; }
+    }
+
+    public enum PacketType
+    {
+        Unknown = 0,
+        Login = 1,
+        Logout = 2,
+        Chat = 3,
+        Movement = 4,
+        Test = 5
+    }
+
     [RnsSerializable]
     public partial class PrimitiveTestPacket : IRnsPacket<long>
     {

@@ -57,21 +57,52 @@ namespace Serializer.Generator.Tests
         {
             var offset = 0;
 
-            // Write Id key and value
+            // Write Id key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
+            // Write flag indicating if value is default
+            var hasIdValue = Id != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIdValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
+            }
 
-            // Write NullableString key and value
+            // Write NullableString key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), NullableString);
+            // Write flag indicating if value is default
+            var hasNullableStringValue = !string.IsNullOrEmpty(NullableString);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasNullableStringValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasNullableStringValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), NullableString);
+            }
 
-            // Write NonNullableString key and value
+            // Write NonNullableString key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), NonNullableString);
+            // Write flag indicating if value is default
+            var hasNonNullableStringValue = !string.IsNullOrEmpty(NonNullableString);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasNonNullableStringValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasNonNullableStringValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), NonNullableString);
+            }
 
-            // Write NonNullableInt key and value
+            // Write NonNullableInt key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), NonNullableInt);
+            // Write flag indicating if value is default
+            var hasNonNullableIntValue = NonNullableInt != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasNonNullableIntValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasNonNullableIntValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), NonNullableInt);
+            }
+
+            // Write terminator byte
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
 
             return offset;
         }
@@ -93,52 +124,78 @@ namespace Serializer.Generator.Tests
                 value = new NullableTestPacket();
                 var offset = 0;
 
-                // Read properties in key-value format
+                // Read properties in key-flag-value format until terminator
                 while (offset < source.Length)
                 {
-                    // Read property key
-                    if (offset >= source.Length) break;
+                    // Check if we have enough data for key and flag
+                    if (offset + 2 > source.Length) break;
+
+                    // Read property key and flag
                     var propertyKey = source[offset];
-                    offset++;
+                    var hasValue = source[offset + 1] != 0;
+                    offset += 2;
+
+                    // Check for terminator
+                    if (propertyKey == 0xFF) break;
 
                     // Process property based on key
                     switch (propertyKey)
                     {
                         case 0: // Id
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
-                                value.Id = IdValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
+                                    value.Id = IdValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 1: // NullableString
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NullableStringValue);
-                                value.NullableString = NullableStringValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NullableStringValue);
+                                    value.NullableString = NullableStringValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         case 2: // NonNullableString
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NonNullableStringValue);
-                                value.NonNullableString = NonNullableStringValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var NonNullableStringValue);
+                                    value.NonNullableString = NonNullableStringValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         case 3: // NullableInt
                         case 4: // NonNullableInt
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var NonNullableIntValue);
-                                value.NonNullableInt = NonNullableIntValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var NonNullableIntValue);
+                                    value.NonNullableInt = NonNullableIntValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         default:
@@ -163,17 +220,36 @@ namespace Serializer.Generator.Tests
         {
             var size = 0;
 
-            // Id: 1 byte for key + value size
-            size += 1 + 4;
+            // Id: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (Id != 0)
+            {
+                size += 4;
+            }
 
-            // NullableString: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(NullableString);
+            // NullableString: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(NullableString))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(NullableString ?? "");
+            }
 
-            // NonNullableString: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(NonNullableString);
+            // NonNullableString: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(NonNullableString))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(NonNullableString ?? "");
+            }
 
-            // NonNullableInt: 1 byte for key + value size
-            size += 1 + 4;
+            // NonNullableInt: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (NonNullableInt != 0)
+            {
+                size += 4;
+            }
+
+            // 1 byte for terminator
+            size += 1;
 
             return size;
         }

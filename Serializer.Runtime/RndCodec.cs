@@ -10,7 +10,7 @@ namespace Serializer.Runtime
     /// (mixed-endian: Data1..Data3 little-endian, remaining 8 bytes unchanged) as produced by
     /// Guid.TryWriteBytes/new Guid(ReadOnlySpan&lt;byte&gt;).
     /// </summary>
-    public static class BinarySerializer
+    public static class RndCodec
     {
         private const int GuidSize = 16;
 

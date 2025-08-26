@@ -57,49 +57,129 @@ namespace Serializer.Generator.Tests
         {
             var offset = 0;
 
-            // Write Id key and value
+            // Write Id key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), Id);
+            // Write flag indicating if value is default
+            var hasIdValue = !string.IsNullOrEmpty(Id);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIdValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), Id);
+            }
 
-            // Write MaxInt key and value
+            // Write MaxInt key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), MaxInt);
+            // Write flag indicating if value is default
+            var hasMaxIntValue = MaxInt != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMaxIntValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasMaxIntValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), MaxInt);
+            }
 
-            // Write MinInt key and value
+            // Write MinInt key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), MinInt);
+            // Write flag indicating if value is default
+            var hasMinIntValue = MinInt != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMinIntValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasMinIntValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), MinInt);
+            }
 
-            // Write MaxFloat key and value
+            // Write MaxFloat key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 3);
-            offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), MaxFloat);
+            // Write flag indicating if value is default
+            var hasMaxFloatValue = MaxFloat != 0f;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMaxFloatValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasMaxFloatValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), MaxFloat);
+            }
 
-            // Write MinFloat key and value
+            // Write MinFloat key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
-            offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), MinFloat);
+            // Write flag indicating if value is default
+            var hasMinFloatValue = MinFloat != 0f;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMinFloatValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasMinFloatValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), MinFloat);
+            }
 
-            // Write MaxDouble key and value
+            // Write MaxDouble key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 5);
-            offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), MaxDouble);
+            // Write flag indicating if value is default
+            var hasMaxDoubleValue = MaxDouble != 0d;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMaxDoubleValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasMaxDoubleValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), MaxDouble);
+            }
 
-            // Write MinDouble key and value
+            // Write MinDouble key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 6);
-            offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), MinDouble);
+            // Write flag indicating if value is default
+            var hasMinDoubleValue = MinDouble != 0d;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasMinDoubleValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasMinDoubleValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteDouble(destination.Slice(offset), MinDouble);
+            }
 
-            // Write EmptyString key and value
+            // Write EmptyString key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 7);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), EmptyString);
+            // Write flag indicating if value is default
+            var hasEmptyStringValue = !string.IsNullOrEmpty(EmptyString);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasEmptyStringValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasEmptyStringValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), EmptyString);
+            }
 
-            // Write LongString key and value
+            // Write LongString key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 8);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), LongString);
+            // Write flag indicating if value is default
+            var hasLongStringValue = !string.IsNullOrEmpty(LongString);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasLongStringValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasLongStringValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), LongString);
+            }
 
-            // Write TrueValue key and value
+            // Write TrueValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 9);
-            offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), TrueValue);
+            // Write flag indicating if value is default
+            var hasTrueValueValue = TrueValue != false;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasTrueValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasTrueValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), TrueValue);
+            }
 
-            // Write FalseValue key and value
+            // Write FalseValue key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 10);
-            offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), FalseValue);
+            // Write flag indicating if value is default
+            var hasFalseValueValue = FalseValue != false;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasFalseValueValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasFalseValueValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), FalseValue);
+            }
+
+            // Write terminator byte
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
 
             return offset;
         }
@@ -121,114 +201,175 @@ namespace Serializer.Generator.Tests
                 value = new EdgeCaseTestPacket();
                 var offset = 0;
 
-                // Read properties in key-value format
+                // Read properties in key-flag-value format until terminator
                 while (offset < source.Length)
                 {
-                    // Read property key
-                    if (offset >= source.Length) break;
+                    // Check if we have enough data for key and flag
+                    if (offset + 2 > source.Length) break;
+
+                    // Read property key and flag
                     var propertyKey = source[offset];
-                    offset++;
+                    var hasValue = source[offset + 1] != 0;
+                    offset += 2;
+
+                    // Check for terminator
+                    if (propertyKey == 0xFF) break;
 
                     // Process property based on key
                     switch (propertyKey)
                     {
                         case 0: // Id
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var IdValue);
-                                value.Id = IdValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var IdValue);
+                                    value.Id = IdValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         case 1: // MaxInt
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var MaxIntValue);
-                                value.MaxInt = MaxIntValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var MaxIntValue);
+                                    value.MaxInt = MaxIntValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 2: // MinInt
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var MinIntValue);
-                                value.MinInt = MinIntValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var MinIntValue);
+                                    value.MinInt = MinIntValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 3: // MaxFloat
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var MaxFloatValue);
-                                value.MaxFloat = MaxFloatValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var MaxFloatValue);
+                                    value.MaxFloat = MaxFloatValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 4: // MinFloat
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var MinFloatValue);
-                                value.MinFloat = MinFloatValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var MinFloatValue);
+                                    value.MinFloat = MinFloatValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 5: // MaxDouble
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var MaxDoubleValue);
-                                value.MaxDouble = MaxDoubleValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 8 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var MaxDoubleValue);
+                                    value.MaxDouble = MaxDoubleValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 6: // MinDouble
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var MinDoubleValue);
-                                value.MinDouble = MinDoubleValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 8 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadDouble(source.Slice(offset), out var MinDoubleValue);
+                                    value.MinDouble = MinDoubleValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 7: // EmptyString
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var EmptyStringValue);
-                                value.EmptyString = EmptyStringValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var EmptyStringValue);
+                                    value.EmptyString = EmptyStringValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         case 8: // LongString
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var LongStringValue);
-                                value.LongString = LongStringValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var LongStringValue);
+                                    value.LongString = LongStringValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         case 9: // TrueValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var TrueValueValue);
-                                value.TrueValue = TrueValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 1 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var TrueValueValue);
+                                    value.TrueValue = TrueValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 10: // FalseValue
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var FalseValueValue);
-                                value.FalseValue = FalseValueValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 1 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var FalseValueValue);
+                                    value.FalseValue = FalseValueValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         default:
@@ -253,38 +394,85 @@ namespace Serializer.Generator.Tests
         {
             var size = 0;
 
-            // Id: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(Id);
+            // Id: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(Id))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(Id ?? "");
+            }
 
-            // MaxInt: 1 byte for key + value size
-            size += 1 + 4;
+            // MaxInt: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (MaxInt != 0)
+            {
+                size += 4;
+            }
 
-            // MinInt: 1 byte for key + value size
-            size += 1 + 4;
+            // MinInt: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (MinInt != 0)
+            {
+                size += 4;
+            }
 
-            // MaxFloat: 1 byte for key + value size
-            size += 1 + 4;
+            // MaxFloat: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (MaxFloat != 0f)
+            {
+                size += 4;
+            }
 
-            // MinFloat: 1 byte for key + value size
-            size += 1 + 4;
+            // MinFloat: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (MinFloat != 0f)
+            {
+                size += 4;
+            }
 
-            // MaxDouble: 1 byte for key + value size
-            size += 1 + 8;
+            // MaxDouble: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (MaxDouble != 0d)
+            {
+                size += 8;
+            }
 
-            // MinDouble: 1 byte for key + value size
-            size += 1 + 8;
+            // MinDouble: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (MinDouble != 0d)
+            {
+                size += 8;
+            }
 
-            // EmptyString: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(EmptyString);
+            // EmptyString: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(EmptyString))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(EmptyString ?? "");
+            }
 
-            // LongString: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(LongString);
+            // LongString: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(LongString))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(LongString ?? "");
+            }
 
-            // TrueValue: 1 byte for key + value size
-            size += 1 + 1;
+            // TrueValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (TrueValue != false)
+            {
+                size += 1;
+            }
 
-            // FalseValue: 1 byte for key + value size
-            size += 1 + 1;
+            // FalseValue: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (FalseValue != false)
+            {
+                size += 1;
+            }
+
+            // 1 byte for terminator
+            size += 1;
 
             return size;
         }

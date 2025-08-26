@@ -152,8 +152,8 @@ namespace Serializer.Generator.Tests
             var size = testPacket.GetSerializedSize();
 
             // Assert
-            // 6 properties * 1 byte per key = 6 bytes
-            Assert.Equal(6, size);
+            // 6 properties * 2 bytes (key + flag) + 1 terminator = 13 bytes
+            Assert.Equal(13, size);
         }
 
         [Fact]
@@ -175,8 +175,8 @@ namespace Serializer.Generator.Tests
 
             // Assert
             // 6 keys (1 byte each) + Id (4 bytes) + PlayerName (2 + 10 bytes) + X (4 bytes) + Y (4 bytes) + Health (4 bytes) + IsAlive (1 byte)
-            // 6 + 4 + 12 + 4 + 4 + 4 + 1 = 35 bytes
-            Assert.Equal(35, size);
+            // 6 properties * 2 bytes (key + flag) + Id (4 bytes) + PlayerName (2 + 10 bytes) + X (4 bytes) + Y (4 bytes) + Health (4 bytes) + IsAlive (1 byte) + 1 terminator = 32 bytes
+            Assert.Equal(32, size);
         }
 
         [Fact]
@@ -197,9 +197,8 @@ namespace Serializer.Generator.Tests
             var size = testPacket.GetSerializedSize();
 
             // Assert
-            // 6 keys (1 byte each) + Id (4 bytes) + X (4 bytes) + IsAlive (1 byte)
-            // 6 + 4 + 4 + 1 = 15 bytes
-            Assert.Equal(15, size);
+            // 6 properties * 2 bytes (key + flag) + Id (4 bytes) + X (4 bytes) + IsAlive (1 byte) + 1 terminator = 22 bytes
+            Assert.Equal(22, size);
         }
 
         #endregion
@@ -217,14 +216,15 @@ namespace Serializer.Generator.Tests
             var bytesWritten = testPacket.Write(buffer);
 
             // Assert
-            Assert.Equal(6, bytesWritten);
-            // Verify only keys are written (0, 1, 2, 3, 4, 5)
-            Assert.Equal(0, buffer[0]);
-            Assert.Equal(1, buffer[1]);
-            Assert.Equal(2, buffer[2]);
-            Assert.Equal(3, buffer[3]);
-            Assert.Equal(4, buffer[4]);
-            Assert.Equal(5, buffer[5]);
+            Assert.Equal(13, bytesWritten);
+            // Verify only keys are written (0, 1, 2, 3, 4, 5) after 4-byte length prefix
+            // Format: [4 bytes: length] [flag1][key1] [flag2][key2] [flag3][key3] [flag4][key4] [flag5][key5] [flag6][key6]
+            Assert.Equal(0, buffer[0]); // key1
+            Assert.Equal(1, buffer[2]); // key2
+            Assert.Equal(2, buffer[4]); // key3
+            Assert.Equal(3, buffer[6]); // key4
+            Assert.Equal(4, buffer[8]); // key5
+            Assert.Equal(5, buffer[10]); // key6
         }
 
         [Fact]
@@ -246,7 +246,7 @@ namespace Serializer.Generator.Tests
             var bytesWritten = testPacket.Write(buffer);
 
             // Assert
-            Assert.Equal(35, bytesWritten);
+            Assert.Equal(32, bytesWritten);
 
             // Verify keys are written
             Assert.Equal(0, buffer[0]); // Id key
@@ -257,7 +257,7 @@ namespace Serializer.Generator.Tests
             Assert.Equal(5, buffer[5]); // IsAlive key
 
             // Verify values are written (simplified check)
-            Assert.True(bytesWritten > 6); // More than just keys
+            Assert.True(bytesWritten > 13); // More than just keys + flags + terminator
         }
 
         [Fact]
@@ -279,7 +279,7 @@ namespace Serializer.Generator.Tests
             var bytesWritten = testPacket.Write(buffer);
 
             // Assert
-            Assert.Equal(15, bytesWritten);
+            Assert.Equal(22, bytesWritten);
 
             // Verify keys are written
             Assert.Equal(0, buffer[0]); // Id key
@@ -307,7 +307,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(6, bytesRead);
+            Assert.Equal(13, bytesRead);
             Assert.Equal(0, readPacket.Id);
             Assert.Equal(string.Empty, readPacket.PlayerName);
             Assert.Equal(0.0f, readPacket.X);
@@ -337,7 +337,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(35, bytesRead);
+            Assert.Equal(32, bytesRead);
             Assert.Equal(123, readPacket.Id);
             Assert.Equal("TestPlayer", readPacket.PlayerName);
             Assert.Equal(10.5f, readPacket.X);
@@ -367,7 +367,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(15, bytesRead);
+            Assert.Equal(22, bytesRead);
             Assert.Equal(123, readPacket.Id);
             Assert.Equal("", readPacket.PlayerName);
             Assert.Equal(10.5f, readPacket.X);
@@ -494,7 +494,7 @@ namespace Serializer.Generator.Tests
             var bytesWritten = testPacket.ToBytes(buffer);
 
             // Assert
-            Assert.Equal(35, bytesWritten);
+            Assert.Equal(32, bytesWritten);
             Assert.True(bytesWritten > 0);
         }
 
@@ -514,9 +514,10 @@ namespace Serializer.Generator.Tests
 
             // Assert
             // Verify keys are written in sequential order
+            // Format: [key1][flag1] [key2][flag2] [key3][flag3] [key4][flag4] [key5][flag5] [key6][flag6] [terminator]
             for (int i = 0; i < 6; i++)
             {
-                Assert.Equal(i, buffer[i]);
+                Assert.Equal(i, buffer[i * 2]); // Keys are written at even offsets
             }
         }
 

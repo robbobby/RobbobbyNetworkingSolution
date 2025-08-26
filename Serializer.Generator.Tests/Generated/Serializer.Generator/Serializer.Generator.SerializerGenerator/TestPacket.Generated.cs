@@ -57,29 +57,74 @@ namespace Serializer.Generator.Tests
         {
             var offset = 0;
 
-            // Write Id key and value
+            // Write Id key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
+            // Write flag indicating if value is default
+            var hasIdValue = Id != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIdValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIdValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Id);
+            }
 
-            // Write PlayerName key and value
+            // Write PlayerName key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 1);
-            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), PlayerName);
+            // Write flag indicating if value is default
+            var hasPlayerNameValue = !string.IsNullOrEmpty(PlayerName);
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasPlayerNameValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasPlayerNameValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), PlayerName);
+            }
 
-            // Write X key and value
+            // Write X key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 2);
-            offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), X);
+            // Write flag indicating if value is default
+            var hasXValue = X != 0f;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasXValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasXValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), X);
+            }
 
-            // Write Y key and value
+            // Write Y key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 3);
-            offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), Y);
+            // Write flag indicating if value is default
+            var hasYValue = Y != 0f;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasYValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasYValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteSingle(destination.Slice(offset), Y);
+            }
 
-            // Write Health key and value
+            // Write Health key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 4);
-            offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Health);
+            // Write flag indicating if value is default
+            var hasHealthValue = Health != 0;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasHealthValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasHealthValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteInt32(destination.Slice(offset), Health);
+            }
 
-            // Write IsAlive key and value
+            // Write IsAlive key
             offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 5);
-            offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), IsAlive);
+            // Write flag indicating if value is default
+            var hasIsAliveValue = IsAlive != false;
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), hasIsAliveValue ? (byte)1 : (byte)0);
+            // Write value only if not default
+            if (hasIsAliveValue)
+            {
+                offset += Serializer.Runtime.BinarySerializer.WriteBoolean(destination.Slice(offset), IsAlive);
+            }
+
+            // Write terminator byte
+            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);
 
             return offset;
         }
@@ -101,69 +146,105 @@ namespace Serializer.Generator.Tests
                 value = new TestPacket();
                 var offset = 0;
 
-                // Read properties in key-value format
+                // Read properties in key-flag-value format until terminator
                 while (offset < source.Length)
                 {
-                    // Read property key
-                    if (offset >= source.Length) break;
+                    // Check if we have enough data for key and flag
+                    if (offset + 2 > source.Length) break;
+
+                    // Read property key and flag
                     var propertyKey = source[offset];
-                    offset++;
+                    var hasValue = source[offset + 1] != 0;
+                    offset += 2;
+
+                    // Check for terminator
+                    if (propertyKey == 0xFF) break;
 
                     // Process property based on key
                     switch (propertyKey)
                     {
                         case 0: // Id
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
-                                value.Id = IdValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var IdValue);
+                                    value.Id = IdValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 1: // PlayerName
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var PlayerNameValue);
-                                value.PlayerName = PlayerNameValue;
+                                // Check if there's enough data to read a string (at least 2 bytes for length)
+                                if (offset + 2 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var PlayerNameValue);
+                                    value.PlayerName = PlayerNameValue;
+                                }
                             }
+                            // If no value, keep default (null/empty)
                             break;
                         }
                         case 2: // X
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var XValue);
-                                value.X = XValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var XValue);
+                                    value.X = XValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 3: // Y
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var YValue);
-                                value.Y = YValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadSingle(source.Slice(offset), out var YValue);
+                                    value.Y = YValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 4: // Health
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var HealthValue);
-                                value.Health = HealthValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 4 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadInt32(source.Slice(offset), out var HealthValue);
+                                    value.Health = HealthValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         case 5: // IsAlive
                         {
-                            if (offset < source.Length)
+                            if (hasValue)
                             {
-                                offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var IsAliveValue);
-                                value.IsAlive = IsAliveValue;
+                                // Check if there's enough data to read a value
+                                if (offset + 1 <= source.Length)
+                                {
+                                    offset += Serializer.Runtime.BinarySerializer.ReadBoolean(source.Slice(offset), out var IsAliveValue);
+                                    value.IsAlive = IsAliveValue;
+                                }
                             }
+                            // If no value, keep default
                             break;
                         }
                         default:
@@ -188,23 +269,50 @@ namespace Serializer.Generator.Tests
         {
             var size = 0;
 
-            // Id: 1 byte for key + value size
-            size += 1 + 4;
+            // Id: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (Id != 0)
+            {
+                size += 4;
+            }
 
-            // PlayerName: 1 byte for key + 2 bytes for length + string content
-            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount(PlayerName);
+            // PlayerName: 2 bytes (key + flag) + 2 bytes for length + string content (if not default)
+            size += 2; // Always count key and flag
+            if (!string.IsNullOrEmpty(PlayerName))
+            {
+                size += 2 + System.Text.Encoding.UTF8.GetByteCount(PlayerName ?? "");
+            }
 
-            // X: 1 byte for key + value size
-            size += 1 + 4;
+            // X: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (X != 0f)
+            {
+                size += 4;
+            }
 
-            // Y: 1 byte for key + value size
-            size += 1 + 4;
+            // Y: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (Y != 0f)
+            {
+                size += 4;
+            }
 
-            // Health: 1 byte for key + value size
-            size += 1 + 4;
+            // Health: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (Health != 0)
+            {
+                size += 4;
+            }
 
-            // IsAlive: 1 byte for key + value size
-            size += 1 + 1;
+            // IsAlive: 2 bytes (key + flag) + value size (if not default)
+            size += 2; // Always count key and flag
+            if (IsAlive != false)
+            {
+                size += 1;
+            }
+
+            // 1 byte for terminator
+            size += 1;
 
             return size;
         }

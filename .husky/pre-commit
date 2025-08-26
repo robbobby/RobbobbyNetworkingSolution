@@ -11,6 +11,10 @@ for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Seriali
   dotnet format analyzers "$p" --no-restore --verbosity minimal
 done
 
+# Ensure formatting changes are included in this commit
+echo "📦 Staging formatting changes..."
+git add -u
+
 echo "🔨 Building solution..."
 dotnet build
 

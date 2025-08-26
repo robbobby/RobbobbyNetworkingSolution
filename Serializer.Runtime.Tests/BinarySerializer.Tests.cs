@@ -89,6 +89,49 @@ namespace Serializer.Runtime.Tests
             Assert.Equal("source", exception.ParamName);
         }
 
+        [Fact]
+        public void ReadBooleanStrict_ValidValues_ReadsCorrectly()
+        {
+            // Arrange
+            var buffer = new byte[1];
+
+            // Test true (1)
+            buffer[0] = 1;
+            var result = BinarySerializer.ReadBooleanStrict(buffer, out var value);
+            Assert.Equal(1, result);
+            Assert.True(value);
+
+            // Test false (0)
+            buffer[0] = 0;
+            result = BinarySerializer.ReadBooleanStrict(buffer, out value);
+            Assert.Equal(1, result);
+            Assert.False(value);
+        }
+
+        [Fact]
+        public void ReadBooleanStrict_InvalidValue_ThrowsFormatException()
+        {
+            // Arrange
+            var buffer = new byte[1];
+            buffer[0] = 42; // Invalid boolean value
+
+            // Act & Assert
+            var exception = Assert.Throws<FormatException>(() => BinarySerializer.ReadBooleanStrict(buffer, out _));
+            Assert.Contains("Invalid boolean encoding: expected 0 or 1, got 42", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void ReadBooleanStrict_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = Array.Empty<byte>();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadBooleanStrict(buffer, out _));
+            Assert.Contains("Buffer too small for boolean", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
+        }
+
         #endregion
 
         #region Byte Tests
@@ -625,6 +668,96 @@ namespace Serializer.Runtime.Tests
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadGuid(buffer, out _));
             Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void WriteGuidRfc4122_ReadGuidRfc4122_RoundTrip()
+        {
+            // Arrange
+            var testGuid = Guid.NewGuid();
+            var buffer = new byte[16];
+
+            // Act - Write RFC 4122
+            var bytesWritten = BinarySerializer.WriteGuidRfc4122(buffer, testGuid);
+            Assert.Equal(16, bytesWritten);
+
+            // Act - Read RFC 4122
+            var bytesRead = BinarySerializer.ReadGuidRfc4122(buffer, out var readGuid);
+
+            // Assert
+            Assert.Equal(16, bytesRead);
+            Assert.Equal(testGuid, readGuid);
+        }
+
+        [Fact]
+        public void WriteGuidRfc4122_EmptyGuid_WritesCorrectBytes()
+        {
+            // Arrange
+            var emptyGuid = Guid.Empty;
+            var buffer = new byte[16];
+
+            // Act
+            var bytesWritten = BinarySerializer.WriteGuidRfc4122(buffer, emptyGuid);
+
+            // Assert
+            Assert.Equal(16, bytesWritten);
+            // Empty GUID should write 16 zero bytes in RFC 4122 order
+            for (int i = 0; i < 16; i++)
+            {
+                Assert.Equal(0, buffer[i]);
+            }
+        }
+
+        [Fact]
+        public void WriteGuidRfc4122_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[15];
+            var testGuid = Guid.NewGuid();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteGuidRfc4122(buffer, testGuid));
+            Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void ReadGuidRfc4122_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[15];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadGuidRfc4122(buffer, out _));
+            Assert.Contains("Buffer too small for Guid", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Guid_StandardVsRfc4122_DifferentByteOrder()
+        {
+            // Arrange
+            var testGuid = Guid.NewGuid();
+            var standardBuffer = new byte[16];
+            var rfc4122Buffer = new byte[16];
+
+            // Act - Write using both methods
+            BinarySerializer.WriteGuid(standardBuffer, testGuid);
+            BinarySerializer.WriteGuidRfc4122(rfc4122Buffer, testGuid);
+
+            // Assert - The byte orders should be different for the first 8 bytes
+            // (Data1, Data2, Data3 are reversed in RFC 4122)
+            Assert.NotEqual(standardBuffer[0], rfc4122Buffer[0]);
+            Assert.NotEqual(standardBuffer[1], rfc4122Buffer[1]);
+            Assert.NotEqual(standardBuffer[2], rfc4122Buffer[2]);
+            Assert.NotEqual(standardBuffer[3], rfc4122Buffer[3]);
+            Assert.NotEqual(standardBuffer[4], rfc4122Buffer[4]);
+            Assert.NotEqual(standardBuffer[5], rfc4122Buffer[5]);
+            Assert.NotEqual(standardBuffer[6], rfc4122Buffer[6]);
+            Assert.NotEqual(standardBuffer[7], rfc4122Buffer[7]);
+            // Last 8 bytes should be the same
+            for (int i = 8; i < 16; i++)
+            {
+                Assert.Equal(standardBuffer[i], rfc4122Buffer[i]);
+            }
         }
 
         #endregion

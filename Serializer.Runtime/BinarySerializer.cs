@@ -5,10 +5,14 @@ namespace Serializer.Runtime
 {
     /// <summary>
     /// Static utility class providing Span-based binary serialization for primitive types.
-    /// All methods use little-endian byte order for consistency.
+    /// Numeric methods use little-endian byte order. Guid methods use the .NET Guid byte layout
+    /// (mixed-endian: Data1..Data3 little-endian, remaining 8 bytes unchanged) as produced by
+    /// Guid.TryWriteBytes/new Guid(ReadOnlySpan&lt;byte&gt;).
     /// </summary>
     public static class BinarySerializer
     {
+        private const int GuidSize = 16;
+
         #region Boolean
 
         /// <summary>
@@ -40,6 +44,27 @@ namespace Serializer.Runtime
                 throw new ArgumentException($"Buffer too small for boolean; need {sizeof(bool)}, have {source.Length}.", nameof(source));
 
             value = source[0] != 0;
+            return sizeof(bool);
+        }
+
+        /// <summary>
+        /// Reads a boolean that must be encoded as 0 or 1.
+        /// </summary>
+        /// <param name="source">The source buffer.</param>
+        /// <param name="value">The read boolean value.</param>
+        /// <returns>The number of bytes read (1).</returns>
+        /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
+        /// <exception cref="FormatException">Thrown when the encoded value is not 0 or 1.</exception>
+        public static int ReadBooleanStrict(ReadOnlySpan<byte> source, out bool value)
+        {
+            if (source.Length < sizeof(bool))
+                throw new ArgumentException($"Buffer too small for boolean; need {sizeof(bool)}, have {source.Length}.", nameof(source));
+
+            byte b = source[0];
+            if (b != 0 && b != 1)
+                throw new FormatException($"Invalid boolean encoding: expected 0 or 1, got {b}.");
+
+            value = b == 1;
             return sizeof(bool);
         }
 
@@ -416,12 +441,12 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteGuid(Span<byte> destination, Guid value)
         {
-            if (destination.Length < 16)
-                throw new ArgumentException($"Buffer too small for Guid; need 16, have {destination.Length}.", nameof(destination));
+            if (destination.Length < GuidSize)
+                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {destination.Length}.", nameof(destination));
 
             _ = value.TryWriteBytes(destination);
 
-            return 16;
+            return GuidSize;
         }
 
         /// <summary>
@@ -433,11 +458,58 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadGuid(ReadOnlySpan<byte> source, out Guid value)
         {
-            if (source.Length < 16)
-                throw new ArgumentException($"Buffer too small for Guid; need 16, have {source.Length}.", nameof(source));
+            if (source.Length < GuidSize)
+                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {source.Length}.", nameof(source));
 
             value = new Guid(source);
-            return 16;
+            return GuidSize;
+        }
+
+        /// <summary>
+        /// Writes a Guid in RFC 4122 byte order (network/big-endian for all fields).
+        /// </summary>
+        /// <param name="destination">The destination buffer.</param>
+        /// <param name="value">The GUID value to write.</param>
+        /// <returns>The number of bytes written (16).</returns>
+        /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
+        public static int WriteGuidRfc4122(Span<byte> destination, Guid value)
+        {
+            if (destination.Length < GuidSize)
+                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {destination.Length}.", nameof(destination));
+
+            Span<byte> tmp = stackalloc byte[GuidSize];
+            value.TryWriteBytes(tmp); // .NET mixed-endian layout
+
+            // Convert to RFC 4122 layout by reversing the first 4, next 2, next 2 bytes
+            destination[0] = tmp[3]; destination[1] = tmp[2]; destination[2] = tmp[1]; destination[3] = tmp[0];
+            destination[4] = tmp[5]; destination[5] = tmp[4];
+            destination[6] = tmp[7]; destination[7] = tmp[6];
+            tmp.Slice(8).CopyTo(destination.Slice(8));
+
+            return GuidSize;
+        }
+
+        /// <summary>
+        /// Reads a Guid from RFC 4122 byte order (network/big-endian for all fields).
+        /// </summary>
+        /// <param name="source">The source buffer.</param>
+        /// <param name="value">The read GUID value.</param>
+        /// <returns>The number of bytes read (16).</returns>
+        /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
+        public static int ReadGuidRfc4122(ReadOnlySpan<byte> source, out Guid value)
+        {
+            if (source.Length < GuidSize)
+                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {source.Length}.", nameof(source));
+
+            Span<byte> tmp = stackalloc byte[GuidSize];
+            // Reverse RFC 4122 -> .NET layout
+            tmp[0] = source[3]; tmp[1] = source[2]; tmp[2] = source[1]; tmp[3] = source[0];
+            tmp[4] = source[5]; tmp[5] = source[4];
+            tmp[6] = source[7]; tmp[7] = source[6];
+            source.Slice(8).CopyTo(tmp.Slice(8));
+
+            value = new Guid(tmp);
+            return GuidSize;
         }
 
         #endregion

@@ -72,15 +72,12 @@ csharp_prefer_simple_using_statement = true:suggestion
 csharp_style_pattern_local_over_anonymous_function = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 
-# xUnit analyzer configuration - prevent auto-fixing of test class visibility
-dotnet_diagnostic.xUnit1000.severity = warning
-dotnet_diagnostic.xUnit1000.auto_fix = false
-dotnet_diagnostic.xUnit1000.auto_fix_severity = none
+[*.cs]
+# xUnit analyzer configuration (supported keys)
+dotnet_diagnostic.xUnit1000.severity = warning      # control specific rule severity (https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files?utm_source=chatgpt.com)
 
-# Disable all xUnit auto-fixing
-dotnet_diagnostic.xUnit*.auto_fix = false
-dotnet_diagnostic.xUnit*.auto_fix_severity = none
-
+# (Optional) bulk-configure all xUnit analyzer severities
+dotnet_analyzer_diagnostic.category-xUnit.severity = warning  # control category severity (https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options?utm_source=chatgpt.com)
 # Project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_style = space

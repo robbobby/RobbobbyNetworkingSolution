@@ -4,7 +4,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    public sealed class IPacketTIdTests
+    public sealed class IRnsPacketTIdTests
     {
         [Fact]
         public void IRnsPacketTIdCanBeImplementedWithIntId()
@@ -27,7 +27,8 @@ namespace Serializer.Abstractions.Tests
             // Assert
             Assert.IsAssignableFrom<IRnsPacket>(packet);
             Assert.IsAssignableFrom<IRnsPacket<byte>>(packet);
-            Assert.Equal(255, packet.Id);
+            Assert.IsType<byte>(packet.Id);
+            Assert.Equal((byte)255, packet.Id);
         }
 
         [Fact]
@@ -52,7 +53,8 @@ namespace Serializer.Abstractions.Tests
             // Assert
             Assert.IsAssignableFrom<IRnsPacket>(packet);
             Assert.IsAssignableFrom<IRnsPacket<short>>(packet);
-            Assert.Equal(12345, packet.Id);
+            Assert.IsType<short>(packet.Id);
+            Assert.Equal((short)12345, packet.Id);
         }
 
         [Fact]

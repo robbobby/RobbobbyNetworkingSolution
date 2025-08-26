@@ -27,12 +27,20 @@ namespace Serializer.Abstractions.Tests
             var buffer = new byte[32];
 
             // Act
+            var expectedSize = packet.GetSerializedSize();
             var bytesWritten = packet.Write(buffer);
 
             // Assert
-            Assert.Equal(16, bytesWritten);
+            Assert.Equal(expectedSize, bytesWritten);
             Assert.Equal(123, packet.Id);
             Assert.Equal(16, packet.GetSerializedSize());
+            // Verify buffer content: first 4 bytes encode Id, remaining pattern
+            var idFromBuffer = System.BitConverter.ToInt32(buffer, 0);
+            Assert.Equal(packet.Id, idFromBuffer);
+            for (int i = 4; i < expectedSize; i++)
+            {
+                Assert.Equal((byte)(i * 2), buffer[i]);
+            }
         }
 
         [Fact]
@@ -73,8 +81,8 @@ namespace Serializer.Abstractions.Tests
                 if (destination.Length < 16)
                     throw new System.ArgumentException("Buffer too small", nameof(destination));
 
-                // Write ID (4 bytes) + some data (12 bytes)
-                System.BitConverter.TryWriteBytes(destination, Id);
+                // Write ID (4 bytes, little-endian) + some data (12 bytes)
+                System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(destination, Id);
                 for (int i = 4; i < 16; i++)
                 {
                     destination[i] = (byte)(i * 2);

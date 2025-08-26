@@ -3,7 +3,7 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    public sealed class BinarySerializableAttributeTests
+    public sealed class RnsSerializableAttributeTests
     {
         [Fact]
         public void AttributeCanBeAppliedToClass()
@@ -59,9 +59,10 @@ namespace Serializer.Abstractions.Tests
             // Assert
             Assert.Single(attributes);
             Assert.IsType<RnsSerializableAttribute>(attributes[0]);
-            Assert.IsAssignableFrom<IRnsPacket>(new TestFullPacket());
-            Assert.IsAssignableFrom<IRnsPacket<int>>(new TestFullPacket());
-            Assert.IsAssignableFrom<IRnsBinaryWritable>(new TestFullPacket());
+            var instance = new TestFullPacket();
+            Assert.IsAssignableFrom<IRnsPacket>(instance);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(instance);
+            Assert.IsAssignableFrom<IRnsBinaryWritable>(instance);
         }
 
         [Fact]
@@ -119,8 +120,8 @@ namespace Serializer.Abstractions.Tests
                 if (destination.Length < 16)
                     throw new System.ArgumentException("Buffer too small", nameof(destination));
 
-                // Write ID (4 bytes) + some data (12 bytes)
-                System.BitConverter.TryWriteBytes(destination, Id);
+                // Write ID (4 bytes, little-endian) + some data (12 bytes)
+                System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(destination, Id);
                 for (int i = 4; i < 16; i++)
                 {
                     destination[i] = (byte)(i * 2);

@@ -3,34 +3,19 @@ using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {
-    public sealed class IPacketTests
+    public sealed class IRnsPacketTests
     {
-        [Fact]
-        public void IRnsPacketCanBeImplementedByClass()
+        public static IEnumerable<object[]> PacketInstances()
         {
-            // Arrange & Act
-            var packet = new TestPacket();
-
-            // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            yield return new object[] { new TestPacket() };
+            yield return new object[] { new TestPacketStruct() };
+            yield return new object[] { new TestSealedPacket() };
         }
 
-        [Fact]
-        public void IRnsPacketCanBeImplementedByStruct()
+        [Theory]
+        [MemberData(nameof(PacketInstances))]
+        public void IRnsPacketIsAssignable(object packet)
         {
-            // Arrange & Act
-            var packet = new TestPacketStruct();
-
-            // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
-        }
-
-        [Fact]
-        public void IRnsPacketCanBeImplementedBySealedClass()
-        {
-            // Arrange & Act
-            var packet = new TestSealedPacket();
-
             // Assert
             Assert.IsAssignableFrom<IRnsPacket>(packet);
         }

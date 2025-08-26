@@ -3,15 +3,13 @@
 
 echo "🔍 Running pre-commit checks..."
 
-echo "📝 Formatting C# files (excluding test projects)..."
-# Only format non-test projects to avoid xUnit analyzer auto-fixing issues
-dotnet format Serializer.Abstractions --no-restore --verbosity minimal
-dotnet format Serializer.Generator --no-restore --verbosity minimal
-dotnet format Serializer.Runtime --no-restore --verbosity minimal
-dotnet format Serializer.Wire --no-restore --verbosity minimal
-dotnet format Transport.Client --no-restore --verbosity minimal
-dotnet format Transport.Server --no-restore --verbosity minimal
-dotnet format Unity.Package --no-restore --verbosity minimal
+echo "📝 Formatting C# files..."
+# Safe whitespace across the whole repo (tests included, no analyzer code fixes):
+dotnet format whitespace --no-restore --verbosity minimal
+# Analyzer fixes only for non-test projects:
+for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
+  dotnet format analyzers "$p" --no-restore --verbosity minimal
+done
 
 echo "🔨 Building solution..."
 dotnet build

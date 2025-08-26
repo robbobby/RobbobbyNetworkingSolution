@@ -28,7 +28,7 @@ namespace Serializer.Abstractions.Tests
             var bytesWritten = writable.Write(buffer);
 
             // Assert
-            Assert.Equal(8, bytesWritten);
+            Assert.Equal(writable.GetSerializedSize(), bytesWritten);
         }
 
         [Fact]
@@ -46,6 +46,11 @@ namespace Serializer.Abstractions.Tests
             Assert.Equal(0x34, buffer[1]); // Second byte
             Assert.Equal(0x56, buffer[2]); // Third byte
             Assert.Equal(0x78, buffer[3]); // Fourth byte
+            // Ensure bytes after the written span are untouched
+            for (int i = 8; i < buffer.Length; i++)
+            {
+                Assert.Equal(0, buffer[i]);
+            }
         }
 
         [Fact]
@@ -87,6 +92,22 @@ namespace Serializer.Abstractions.Tests
             Assert.Equal(8, bytesWritten);
             Assert.Equal(0x12, exactBuffer[0]);
             Assert.Equal(0xF0, exactBuffer[7]);
+        }
+
+        [Fact]
+        public void WriteSupportsStackallocSpan()
+        {
+            // Arrange
+            var writable = new TestBinaryWritable();
+            Span<byte> stackSpan = stackalloc byte[writable.GetSerializedSize()];
+
+            // Act
+            var bytesWritten = writable.Write(stackSpan);
+
+            // Assert
+            Assert.Equal(writable.GetSerializedSize(), bytesWritten);
+            Assert.Equal(0x12, stackSpan[0]);
+            Assert.Equal(0xF0, stackSpan[7]);
         }
 
         #region Test Implementations

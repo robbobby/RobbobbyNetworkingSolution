@@ -4,6 +4,7 @@ using Serializer.Runtime;
 
 namespace Serializer.Runtime.Tests
 {
+    [Trait("Category", "Unit")]
     public sealed class BinarySerializerTests
     {
         #region Boolean Tests

@@ -471,9 +471,11 @@ namespace Serializer.Generator.Runtime
         {
             var propertyName = property.Name;
             var fullTypeName = property.Type.ToDisplayString();
-            // Remove nullable annotation if present
+            // Remove nullable annotation if present - MODIFIED VERSION
             var typeName = fullTypeName.Replace("?", "");
             
+            // Debug: Add a comment showing what we got
+            codeBuilder.AppendLine($"                            // DEBUG: Original type: {fullTypeName}, After replace: {typeName}");
             codeBuilder.AppendLine($"                            if ({typeName}.TryRead(buffer.Slice(consumed, len), out var {propertyName}Value, out var {propertyName}Read))");
             codeBuilder.AppendLine("                            {");
             codeBuilder.AppendLine($"                                readPacket.{propertyName} = {propertyName}Value;");

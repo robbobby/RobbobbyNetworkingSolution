@@ -59,3 +59,6 @@ BenchmarkDotNet.Artifacts/
 docs/tasks/
 node_modules
 scripts/private
+
+# Generated source code
+**/Generated/

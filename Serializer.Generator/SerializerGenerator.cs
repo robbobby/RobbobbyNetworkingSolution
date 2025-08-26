@@ -32,7 +32,10 @@ namespace Serializer.Generator
         {
             // Get the syntax receiver from the context
             if (context.SyntaxReceiver is not SerializableTypeSyntaxReceiver receiver)
+            {
+                context.AddSource("debug.txt", "// Syntax receiver not found");
                 return;
+            }
 
             // Get the compilation
             var compilation = context.Compilation;
@@ -40,17 +43,40 @@ namespace Serializer.Generator
             // Get the RnsSerializable attribute symbol
             var rnsSerializableAttribute = compilation.GetTypeByMetadataName("Serializer.Abstractions.RnsSerializableAttribute");
             if (rnsSerializableAttribute == null)
+            {
+                context.AddSource("debug.txt", "// RnsSerializableAttribute not found");
                 return;
+            }
 
             // Get the IRnsPacket interface symbol
             var irnsPacketInterface = compilation.GetTypeByMetadataName("Serializer.Abstractions.IRnsPacket");
             if (irnsPacketInterface == null)
+            {
+                context.AddSource("debug.txt", "// IRnsPacket interface not found");
                 return;
+            }
 
             // Get the IRnsPacket<TId> interface symbol
             var irnsPacketGenericInterface = compilation.GetTypeByMetadataName("Serializer.Abstractions.IRnsPacket`1");
             if (irnsPacketGenericInterface == null)
+            {
+                context.AddSource("debug.txt", "// IRnsPacket<TId> interface not found");
                 return;
+            }
+
+            // Debug: Log what we found
+            var debugInfo = $"// Found {receiver.CandidateTypes.Count} candidate types\n";
+            debugInfo += $"// RnsSerializableAttribute: {rnsSerializableAttribute}\n";
+            debugInfo += $"// IRnsPacket: {irnsPacketInterface}\n";
+            debugInfo += $"// IRnsPacket<TId>: {irnsPacketGenericInterface}\n";
+
+            // Log each candidate type
+            foreach (var typeDeclaration in receiver.CandidateTypes)
+            {
+                debugInfo += $"// Candidate: {typeDeclaration.Identifier.Text}\n";
+            }
+
+            context.AddSource("debug.txt", debugInfo);
 
             // Process each candidate type
             foreach (var typeDeclaration in receiver.CandidateTypes)
@@ -250,30 +276,20 @@ namespace Serializer.Generator
                 var propertyType = property.Type;
                 var propertyName = property.Name;
 
-                // Write property key (property index/ID)
-                codeBuilder.AppendLine($"            // Write {propertyName} key");
-                codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                codeBuilder.AppendLine();
-
-                // Write property value only if not default
+                // Always write both key and value
                 if (IsPrimitiveType(propertyType))
                 {
                     var writeMethod = GetPrimitiveWriteMethod(propertyType);
-                    var defaultValue = GetDefaultValue(propertyType);
-                    codeBuilder.AppendLine($"            // Write {propertyName} value if not default");
-                    codeBuilder.AppendLine($"            if ({propertyName} != {defaultValue})");
-                    codeBuilder.AppendLine("            {");
-                    codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), {propertyName});");
-                    codeBuilder.AppendLine("            }");
+                    codeBuilder.AppendLine($"            // Write {propertyName} key and value");
+                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
+                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), {propertyName});");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.SpecialType == SpecialType.System_String)
                 {
-                    codeBuilder.AppendLine($"            // Write {propertyName} value if not default");
-                    codeBuilder.AppendLine($"            if (!string.IsNullOrEmpty({propertyName}))");
-                    codeBuilder.AppendLine("            {");
-                    codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), {propertyName});");
-                    codeBuilder.AppendLine("            }");
+                    codeBuilder.AppendLine($"            // Write {propertyName} key and value");
+                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
+                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), {propertyName});");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.TypeKind == TypeKind.Enum)
@@ -282,12 +298,9 @@ namespace Serializer.Generator
                     if (underlyingType != null)
                     {
                         var writeMethod = GetPrimitiveWriteMethod(underlyingType);
-                        var defaultValue = GetDefaultValue(underlyingType);
-                        codeBuilder.AppendLine($"            // Write {propertyName} value if not default");
-                        codeBuilder.AppendLine($"            if (({underlyingType.Name}){propertyName} != {defaultValue})");
-                        codeBuilder.AppendLine("            {");
-                        codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), ({underlyingType.Name}){propertyName});");
-                        codeBuilder.AppendLine("            }");
+                        codeBuilder.AppendLine($"            // Write {propertyName} key and value");
+                        codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
+                        codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), ({underlyingType.Name}){propertyName});");
                         codeBuilder.AppendLine();
                     }
                 }
@@ -421,28 +434,17 @@ namespace Serializer.Generator
                 var propertyType = property.Type;
                 var propertyName = property.Name;
 
-                // Always count 1 byte for the property key
-                codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key");
-                codeBuilder.AppendLine("            size += 1;");
-
-                // Count value size only if not default
+                // Always count both key and value
                 if (IsPrimitiveType(propertyType))
                 {
-                    var size = GetPrimitiveTypeSize(propertyType);
-                    codeBuilder.AppendLine($"            // {propertyName}: {size} bytes for value (if not default)");
-                    codeBuilder.AppendLine($"            if ({propertyName} != {GetDefaultValue(propertyType)})");
-                    codeBuilder.AppendLine("            {");
-                    codeBuilder.AppendLine($"                size += {size};");
-                    codeBuilder.AppendLine("            }");
+                    codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key + value size");
+                    codeBuilder.AppendLine($"            size += 1 + {GetPrimitiveTypeSize(propertyType)};");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.SpecialType == SpecialType.System_String)
                 {
-                    codeBuilder.AppendLine($"            // {propertyName}: 2 bytes for length + string content (if not default)");
-                    codeBuilder.AppendLine($"            if (!string.IsNullOrEmpty({propertyName}))");
-                    codeBuilder.AppendLine("            {");
-                    codeBuilder.AppendLine($"                size += 2 + System.Text.Encoding.UTF8.GetByteCount({propertyName});");
-                    codeBuilder.AppendLine("            }");
+                    codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key + 2 bytes for length + string content");
+                    codeBuilder.AppendLine($"            size += 1 + 2 + System.Text.Encoding.UTF8.GetByteCount({propertyName});");
                     codeBuilder.AppendLine();
                 }
                 else if (propertyType.TypeKind == TypeKind.Enum)
@@ -450,12 +452,8 @@ namespace Serializer.Generator
                     var underlyingType = ((INamedTypeSymbol)propertyType).EnumUnderlyingType;
                     if (underlyingType != null)
                     {
-                        var size = GetPrimitiveTypeSize(underlyingType);
-                        codeBuilder.AppendLine($"            // {propertyName}: {size} bytes for value (if not default)");
-                        codeBuilder.AppendLine($"            if (({underlyingType.Name}){propertyName} != {GetDefaultValue(underlyingType)})");
-                        codeBuilder.AppendLine("            {");
-                        codeBuilder.AppendLine($"                size += {size};");
-                        codeBuilder.AppendLine("            }");
+                        codeBuilder.AppendLine($"            // {propertyName}: 1 byte for key + value size");
+                        codeBuilder.AppendLine($"            size += 1 + {GetPrimitiveTypeSize(underlyingType)};");
                         codeBuilder.AppendLine();
                     }
                 }

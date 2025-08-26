@@ -22,6 +22,7 @@ namespace Serializer.Abstractions
         /// for performance-sensitive code paths where exceptions should be avoided.
         /// </remarks>
         [SuppressMessage("Design", "CA1510:Use ArgumentNullException.ThrowIfNull", Justification = "netstandard2.1 compatibility")]
+        [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "TryWrite method intentionally catches all exceptions to provide non-throwing behavior")]
         public static bool TryWrite(this IRnsBinaryWritable source, Span<byte> destination, out int bytesWritten)
         {
             if (source == null)
@@ -34,8 +35,29 @@ namespace Serializer.Abstractions
                 return false;
             }
 
-            bytesWritten = source.Write(destination);
-            return bytesWritten == size;
+            try
+            {
+                bytesWritten = source.Write(destination);
+                return bytesWritten == size;
+            }
+            catch (ArgumentException)
+            {
+                // Buffer too small or other argument issues
+                bytesWritten = 0;
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                // Write operation failed
+                bytesWritten = 0;
+                return false;
+            }
+            catch (Exception)
+            {
+                // Any other unexpected exception
+                bytesWritten = 0;
+                return false;
+            }
         }
     }
 }

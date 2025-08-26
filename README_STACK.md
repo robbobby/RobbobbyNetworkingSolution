@@ -11,19 +11,19 @@
 ### Key types
 
 ```csharp
-namespace Core
+namespace Serializer.Abstractions
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-    public sealed class BinarySerializableAttribute : Attribute {}
+    public sealed class RnsSerializableAttribute : Attribute {}
 
-    public interface IPacket { }
-    public interface IPacket<TId> : IPacket
+    public interface IRnsPacket { }
+    public interface IRnsPacket<TId> : IRnsPacket
     {
         TId Id { get; }
     }
 
     // Optional – implemented by generated code if you choose
-    public interface IBinaryWritable
+    public interface IRnsBinaryWritable
     {
         int Write(Span<byte> destination);
         int GetSerializedSize();
@@ -74,7 +74,7 @@ public static class BinarySerializer
 }
 ```
 
-### Generated members (appear on your `[BinarySerializable]` types)
+### Generated members (appear on your `[RnsSerializable]` types)
 
 ```csharp
 // on TPacket
@@ -93,8 +93,8 @@ static bool TryRead(ReadOnlySpan<byte> source, out TPacket value, out int bytesR
 ### Usage
 
 * Reference the analyzer package.
-* Annotate your classes/structs with `[BinarySerializable]`.
-* Implement `IPacket<TId>` with the `Id` property.
+* Annotate your classes/structs with `[RnsSerializable]`.
+* Implement `IRnsPacket<TId>` with the `Id` property.
 
 ---
 
@@ -202,7 +202,7 @@ public sealed class ClientSession : IConnectionContext
 
 ### How you use it in Unity
 
-* Define packets (`[BinarySerializable]`) in a **.NET library** that references the Analyzer (generator) during build, or include pre‑generated code.
+* Define packets (`[RnsSerializable]`) in a **.NET library** that references the Analyzer (generator) during build, or include pre‑generated code.
 * In Unity, reference the UPM package and the compiled packet assembly; call `TcpClientConnection` and your generated methods.
 
 ---
@@ -214,15 +214,15 @@ public sealed class ClientSession : IConnectionContext
 ### Example types
 
 ```csharp
-[BinarySerializable]
-public sealed partial class HeartbeatPacket : IPacket<ServerPacketId>
+[RnsSerializable]
+public sealed partial class HeartbeatPacket : IRnsPacket<ServerPacketId>
 {
     public ServerPacketId Id { get; } = ServerPacketId.Heartbeat;
     public long Timestamp { get; set; }
 }
 
-[BinarySerializable]
-public sealed partial class AckPacket : IPacket<ServerPacketId>
+[RnsSerializable]
+public sealed partial class AckPacket : IRnsPacket<ServerPacketId>
 {
     public ServerPacketId Id { get; } = ServerPacketId.Ack;
     public bool   Success { get; set; }

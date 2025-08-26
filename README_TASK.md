@@ -43,11 +43,12 @@
 
 ## B. Serializer.Abstractions -- COMPLETE
 
-* [x] Implement `BinarySerializableAttribute`.
-* [x] Define `IPacket` (marker).
-* [x] Define `IPacket<TId>` with `TId Id { get; }`.
-* [x] Optional: `IBinaryWritable` with `Write(Span<byte>)`, `GetSerializedSize()`.
+* [x] Implement `RnsSerializableAttribute`.
+* [x] Define `IRnsPacket` (marker).
+* [x] Define `IRnsPacket<TId>` with `TId Id { get; }`.
+* [x] Optional: `IRnsBinaryWritable` with `Write(Span<byte>)`, `GetSerializedSize()`.
 * [x] Unit tests: attributes apply correctly, interface compile checks.
+* [x] All interfaces renamed with `Rns` prefix for distinctive branding.
 
 ---
 
@@ -74,7 +75,7 @@
 ## D. Serializer.Generator
 
 * [ ] Roslyn source generator setup.
-* [ ] Scan `[BinarySerializable]` types implementing `IPacket<TId>`.
+* [ ] Scan `[RnsSerializable]` types implementing `IRnsPacket<TId>`.
 * [ ] Generate for each:
 
   * `int Write(Span<byte> dst)`
@@ -84,7 +85,7 @@
 * [ ] Handle:
 
   * Enum underlying type width (byte/ushort/etc.).
-  * Nested `[BinarySerializable]` types.
+  * Nested `[RnsSerializable]` types.
   * Arrays (fixed length).
   * Strings (via Runtime).
 * [ ] Unit tests:

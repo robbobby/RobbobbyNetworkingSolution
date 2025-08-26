@@ -9,7 +9,7 @@ Use the generator for compile-time codecs; ship the runtime + transports via NuG
 
 | Project                     | Type             | Targets                    | Purpose                                                                                                                          |
 | --------------------------- | ---------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Serializer.Abstractions** | NuGet            | `net9.0`, `netstandard2.1` | Attributes (`[BinarySerializable]`), `IPacket`, small shared interfaces. Zero deps.                                              |
+| **Serializer.Abstractions** | NuGet            | `net9.0`, `netstandard2.1` | Attributes (`[RnsSerializable]`), `IRnsPacket`, small shared interfaces. Zero deps.                                              |
 | **Serializer.Runtime**      | NuGet            | `net9.0`, `netstandard2.1` | `BinarySerializer` helpers (Span-based read/write of primitives, strings, Guid).                                                 |
 | **Serializer.Generator**    | NuGet (Analyzer) | `netstandard2.0`           | Roslyn source generator. Emits `Write(Span<byte>)`, `TryRead(ReadOnlySpan<byte> ...)`, `GetSerializedSize()`, `ToBytes(byte[])`. |
 | **Serializer.Wire**         | NuGet            | `net9.0`, `netstandard2.1` | Shared wire utilities: 4-byte LE length-prefixed framing, dispatch contracts, buffer policy.                                     |
@@ -157,8 +157,8 @@ await server.BroadcastAsync(new AckPacket { Success = true, Message = "Welcome" 
 ## Complex nested packet (for testing)
 
 ```csharp
-[BinarySerializable]
-public sealed partial class ComplexTestPacket : IPacket<ServerPacketId>
+[RnsSerializable]
+public sealed partial class ComplexTestPacket : IRnsPacket<ServerPacketId>
 {
     public ServerPacketId Id { get; } = ServerPacketId.Ack;
     public int SessionId { get; set; }
@@ -167,7 +167,7 @@ public sealed partial class ComplexTestPacket : IPacket<ServerPacketId>
     public InventoryItem[] Hotbar { get; set; } = new InventoryItem[5];
 }
 
-[BinarySerializable] public sealed partial class PlayerInfo
+[RnsSerializable] public sealed partial class PlayerInfo
 {
     public Guid PlayerId { get; set; }
     public int Level { get; set; }
@@ -175,7 +175,7 @@ public sealed partial class ComplexTestPacket : IPacket<ServerPacketId>
     public Skill[] Skills { get; set; } = new Skill[3];
 }
 
-[BinarySerializable] public sealed partial class Stats
+[RnsSerializable] public sealed partial class Stats
 {
     public short Str { get; set; }
     public short Dex { get; set; }
@@ -184,34 +184,34 @@ public sealed partial class ComplexTestPacket : IPacket<ServerPacketId>
     public int Mana { get; set; }
 }
 
-[BinarySerializable] public sealed partial class Skill
+[RnsSerializable] public sealed partial class Skill
 {
     public ushort Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public byte Rank { get; set; }
 }
 
-[BinarySerializable] public sealed partial class WorldState
+[RnsSerializable] public sealed partial class WorldState
 {
     public long Tick { get; set; }
     public Vec3 PlayerPos { get; set; } = new();
     public Region Region { get; set; } = new();
 }
 
-[BinarySerializable] public sealed partial class Vec3
+[RnsSerializable] public sealed partial class Vec3
 {
     public float X { get; set; }
     public float Y { get; set; }
     public float Z { get; set; }
 }
 
-[BinarySerializable] public sealed partial class Region
+[RnsSerializable] public sealed partial class Region
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 }
 
-[BinarySerializable] public sealed partial class InventoryItem
+[RnsSerializable] public sealed partial class InventoryItem
 {
     public int ItemId { get; set; }
     public byte Quantity { get; set; }

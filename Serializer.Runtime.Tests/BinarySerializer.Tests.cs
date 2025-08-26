@@ -123,6 +123,30 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(testValue, value);
         }
 
+        [Fact]
+        public void WriteByte_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = Array.Empty<byte>();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteByte(buffer, 0x12));
+            Assert.Contains("Buffer too small for byte", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", exception.ParamName);
+        }
+
+        [Fact]
+        public void ReadByte_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = Array.Empty<byte>();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadByte(buffer, out _));
+            Assert.Contains("Buffer too small for byte", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
+        }
+
         #endregion
 
         #region SByte Tests
@@ -220,6 +244,30 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(testValue, readValue);
         }
 
+        [Fact]
+        public void WriteUInt16_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[1];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteUInt16(buffer, 12345));
+            Assert.Contains("Buffer too small for UInt16", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", exception.ParamName);
+        }
+
+        [Fact]
+        public void ReadUInt16_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[1];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadUInt16(buffer, out _));
+            Assert.Contains("Buffer too small for UInt16", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
+        }
+
         #endregion
 
         #region Int32 Tests
@@ -281,6 +329,30 @@ namespace Serializer.Runtime.Tests
             // Assert
             Assert.Equal(4, bytesRead);
             Assert.Equal(testValue, readValue);
+        }
+
+        [Fact]
+        public void WriteUInt32_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[3];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteUInt32(buffer, 123456789U));
+            Assert.Contains("Buffer too small for UInt32", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", exception.ParamName);
+        }
+
+        [Fact]
+        public void ReadUInt32_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[3];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadUInt32(buffer, out _));
+            Assert.Contains("Buffer too small for UInt32", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
         }
 
         #endregion
@@ -346,6 +418,30 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(testValue, readValue);
         }
 
+        [Fact]
+        public void WriteUInt64_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[7];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteUInt64(buffer, 1234567890123456789UL));
+            Assert.Contains("Buffer too small for UInt64", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", exception.ParamName);
+        }
+
+        [Fact]
+        public void ReadUInt64_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[7];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadUInt64(buffer, out _));
+            Assert.Contains("Buffer too small for UInt64", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
+        }
+
         #endregion
 
         #region Single Tests
@@ -385,6 +481,27 @@ namespace Serializer.Runtime.Tests
             Assert.Contains("Buffer too small for Single", exception.Message, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void WriteSingle_ReadSingle_RoundTrip_NaN_And_Infinities()
+        {
+            var buf = new byte[4];
+
+            // Test NaN
+            Assert.Equal(4, BinarySerializer.WriteSingle(buf, float.NaN));
+            BinarySerializer.ReadSingle(buf, out var fNaN);
+            Assert.True(float.IsNaN(fNaN));
+
+            // Test Positive Infinity
+            Assert.Equal(4, BinarySerializer.WriteSingle(buf, float.PositiveInfinity));
+            BinarySerializer.ReadSingle(buf, out var fPosInf);
+            Assert.True(float.IsPositiveInfinity(fPosInf));
+
+            // Test Negative Infinity
+            Assert.Equal(4, BinarySerializer.WriteSingle(buf, float.NegativeInfinity));
+            BinarySerializer.ReadSingle(buf, out var fNegInf);
+            Assert.True(float.IsNegativeInfinity(fNegInf));
+        }
+
         #endregion
 
         #region Double Tests
@@ -422,6 +539,27 @@ namespace Serializer.Runtime.Tests
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteDouble(buffer, 3.141592653589793));
             Assert.Contains("Buffer too small for Double", exception.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void WriteDouble_ReadDouble_RoundTrip_NaN_And_Infinities()
+        {
+            var buf = new byte[8];
+
+            // Test NaN
+            Assert.Equal(8, BinarySerializer.WriteDouble(buf, double.NaN));
+            BinarySerializer.ReadDouble(buf, out var dNaN);
+            Assert.True(double.IsNaN(dNaN));
+
+            // Test Positive Infinity
+            Assert.Equal(8, BinarySerializer.WriteDouble(buf, double.PositiveInfinity));
+            BinarySerializer.ReadDouble(buf, out var dPosInf);
+            Assert.True(double.IsPositiveInfinity(dPosInf));
+
+            // Test Negative Infinity
+            Assert.Equal(8, BinarySerializer.WriteDouble(buf, double.NegativeInfinity));
+            BinarySerializer.ReadDouble(buf, out var dNegInf);
+            Assert.True(double.IsNegativeInfinity(dNegInf));
         }
 
         #endregion

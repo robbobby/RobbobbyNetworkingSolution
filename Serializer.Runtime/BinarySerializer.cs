@@ -471,8 +471,7 @@ namespace Serializer.Runtime
             if (destination.Length < 16)
                 throw new ArgumentException("Buffer too small for Guid", nameof(destination));
 
-            if (!value.TryWriteBytes(destination))
-                throw new InvalidOperationException("Failed to write GUID to buffer");
+            _ = value.TryWriteBytes(destination);
 
             return 16;
         }

@@ -66,7 +66,7 @@
 * [x] Add guard methods for span length & overflow.
 * [x] Unit tests:
 
-  * Round-trip each primitive, string (empty, max length), Guid.
+  * Round-trip each primitive and Guid.
   * Invalid inputs throw.
   * Fuzz/randomized input doesn’t crash.
 

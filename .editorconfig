@@ -103,3 +103,8 @@ trim_trailing_whitespace = false
 # Test project specific analyzer configuration
 [Serializer.Abstractions.Tests/**/*.cs]
 dotnet_analyzer_diagnostic.category-xUnit.severity = none
+dotnet_diagnostic.CA1707.severity = none
+
+[Serializer.Runtime.Tests/**/*.cs]
+dotnet_analyzer_diagnostic.category-xUnit.severity = none
+dotnet_diagnostic.CA1707.severity = none

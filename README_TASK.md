@@ -54,17 +54,17 @@
 
 ## C. Serializer.Runtime
 
-* [ ] Implement `BinarySerializer`:
+* [x] Implement `BinarySerializer`:
 
-  * [ ] Write/Read for:
+  * [x] Write/Read for:
 
     * Boolean, byte, sbyte.
     * Int16, UInt16, Int32, UInt32, Int64, UInt64.
     * Single, Double.
     * Guid (16 bytes).
   * [ ] Write/Read string (UInt16 length prefix, UTF-8 encoded).
-* [ ] Add guard methods for span length & overflow.
-* [ ] Unit tests:
+* [x] Add guard methods for span length & overflow.
+* [x] Unit tests:
 
   * Round-trip each primitive, string (empty, max length), Guid.
   * Invalid inputs throw.

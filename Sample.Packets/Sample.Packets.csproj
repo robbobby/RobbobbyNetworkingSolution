@@ -14,11 +14,7 @@
     <ItemGroup>
         <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj" />
         <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj" />
-        <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Analyzer Include="../Serializer.Generator/bin/Debug/netstandard2.0/Serializer.Generator.dll" />
+        <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     </ItemGroup>
 
 </Project>

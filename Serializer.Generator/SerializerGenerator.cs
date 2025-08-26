@@ -150,12 +150,6 @@ namespace Serializer.Generator
             codeBuilder.AppendLine("using System;");
             codeBuilder.AppendLine();
 
-            // Generate the packet keys interface
-            GeneratePacketKeysInterface(codeBuilder, typeSymbol);
-
-            // Generate the packet keys class
-            GeneratePacketKeysClass(codeBuilder, typeSymbol);
-
             // Generate the partial class with serialization methods
             GeneratePartialClass(codeBuilder, typeSymbol, semanticModel);
 
@@ -219,245 +213,249 @@ namespace Serializer.Generator
         }
 
         /// <summary>
-        /// Generates the partial class with serialization methods
+        /// Generates the partial class with RNS Binary Spec v1 serialization methods and compile-time field constants
         /// </summary>
         private static void GeneratePartialClass(StringBuilder codeBuilder, INamedTypeSymbol typeSymbol, SemanticModel semanticModel)
         {
             var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString() ?? "";
             var typeName = typeSymbol.Name;
-            var keysClassName = $"{typeName}Keys";
-            var interfaceName = $"I{typeName}Keys";
 
+            codeBuilder.AppendLine($"namespace {namespaceName}");
+            codeBuilder.AppendLine("{");
             codeBuilder.AppendLine($"    /// <summary>");
-            codeBuilder.AppendLine($"    /// Generated partial class for {typeName} with serialization support");
+            codeBuilder.AppendLine($"    /// Generated partial class for {typeName} with RNS Binary Spec v1 serialization support");
             codeBuilder.AppendLine($"    /// </summary>");
             codeBuilder.AppendLine($"    public partial class {typeName}");
             codeBuilder.AppendLine("    {");
-            codeBuilder.AppendLine($"        /// <summary>");
-            codeBuilder.AppendLine($"        /// Static access to packet keys and metadata");
-            codeBuilder.AppendLine($"        /// </summary>");
-            codeBuilder.AppendLine($"        public static {interfaceName} RnsKeys => {keysClassName}.Instance;");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine($"        /// <summary>");
-            codeBuilder.AppendLine($"        /// Alternative access to packet keys (for polymorphic scenarios)");
-            codeBuilder.AppendLine($"        /// </summary>");
-            codeBuilder.AppendLine($"        public static {interfaceName} Keys => {keysClassName}.Instance;");
+
+            // Generate compile-time field constants as requested by the user
+            codeBuilder.AppendLine("        /// <summary>");
+            codeBuilder.AppendLine("        /// Compile-time field number constants for fast lookup");
+            codeBuilder.AppendLine("        /// </summary>");
+            codeBuilder.AppendLine("        public static class Keys");
+            codeBuilder.AppendLine("        {");
+
+            var properties = GetSerializableProperties(typeSymbol);
+            var fieldNumber = 1;
+            foreach (var property in properties)
+            {
+                codeBuilder.AppendLine($"            public const int {property.Name} = {fieldNumber};");
+                fieldNumber++;
+            }
+
+            codeBuilder.AppendLine("        }");
             codeBuilder.AppendLine();
 
             // Generate serialization methods
             GenerateWriteMethod(codeBuilder, typeSymbol, semanticModel);
             GenerateTryReadMethod(codeBuilder, typeSymbol, semanticModel);
-            GenerateGetSerializedSizeMethod(codeBuilder, typeSymbol, semanticModel);
-            GenerateToBytesMethod(codeBuilder, typeSymbol);
 
             codeBuilder.AppendLine("    }");
             codeBuilder.AppendLine("}");
         }
 
         /// <summary>
-        /// Generates the Write method for serialization
+        /// Generates the Write method for RNS Binary Spec v1 serialization with protobuf-style encoding
         /// </summary>
         private static void GenerateWriteMethod(StringBuilder codeBuilder, INamedTypeSymbol typeSymbol, SemanticModel semanticModel)
         {
             codeBuilder.AppendLine($"        /// <summary>");
-            codeBuilder.AppendLine($"        /// Writes the current instance to the specified buffer");
+            codeBuilder.AppendLine($"        /// Writes the current instance to the specified buffer using RNS Binary Spec v1");
             codeBuilder.AppendLine($"        /// </summary>");
-            codeBuilder.AppendLine($"        /// <param name=\"destination\">The destination buffer</param>");
-            codeBuilder.AppendLine($"        /// <returns>The number of bytes written</returns>");
-            codeBuilder.AppendLine($"        public int Write(System.Span<byte> destination)");
+            codeBuilder.AppendLine($"        /// <param name=\"buffer\">The destination buffer</param>");
+            codeBuilder.AppendLine($"        /// <param name=\"bytesWritten\">The number of bytes written</param>");
+            codeBuilder.AppendLine($"        /// <returns>True if successful, false if buffer is too small</returns>");
+            codeBuilder.AppendLine($"        public bool Write(System.Span<byte> buffer, out int bytesWritten)");
             codeBuilder.AppendLine("        {");
-            codeBuilder.AppendLine("            var offset = 0;");
+            codeBuilder.AppendLine("            bytesWritten = 0;");
+            codeBuilder.AppendLine("            var dst = buffer;");
             codeBuilder.AppendLine();
 
-            // Generate write code for each property
+            // Generate write code for each property using RNS Binary Spec v1
             var properties = GetSerializableProperties(typeSymbol);
+            var fieldNumber = 1;
             foreach (var property in properties)
             {
                 var propertyType = property.Type;
                 var propertyName = property.Name;
                 
-                // Write property key, then flag indicating if value is default, then optionally write value
-                if (IsPrimitiveType(propertyType))
+                // Generate field write logic based on type
+                if (propertyType.SpecialType == SpecialType.System_String)
                 {
-                    var writeMethod = GetPrimitiveWriteMethod(propertyType);
-                    var defaultValue = GetDefaultValue(propertyType);
-                    codeBuilder.AppendLine($"            // Write {propertyName} key");
-                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                    codeBuilder.AppendLine($"            // Write flag indicating if value is default");
-                    codeBuilder.AppendLine($"            var has{propertyName}Value = {propertyName} != {defaultValue};");
-                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), has{propertyName}Value ? (byte)1 : (byte)0);");
-                    codeBuilder.AppendLine($"            // Write value only if not default");
-                    codeBuilder.AppendLine($"            if (has{propertyName}Value)");
+                    codeBuilder.AppendLine($"            // {propertyName} (field {fieldNumber}, WT=2)");
+                    codeBuilder.AppendLine($"            if (!string.IsNullOrEmpty({propertyName}))");
                     codeBuilder.AppendLine("            {");
-                    codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), {propertyName});");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.{propertyName}, 2), out var w1)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w1..]; bytesWritten += w1;");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteString(dst, {propertyName}, out var w2)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w2..]; bytesWritten += w2;");
                     codeBuilder.AppendLine("            }");
                     codeBuilder.AppendLine();
                 }
-                else if (propertyType.SpecialType == SpecialType.System_String)
+                else if (propertyType.SpecialType == SpecialType.System_Single)
                 {
-                    codeBuilder.AppendLine($"            // Write {propertyName} key");
-                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                    codeBuilder.AppendLine($"            // Write flag indicating if value is default");
-                    codeBuilder.AppendLine($"            var has{propertyName}Value = !string.IsNullOrEmpty({propertyName});");
-                    codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), has{propertyName}Value ? (byte)1 : (byte)0);");
-                    codeBuilder.AppendLine($"            // Write value only if not default");
-                    codeBuilder.AppendLine($"            if (has{propertyName}Value)");
+                    codeBuilder.AppendLine($"            // {propertyName} (field {fieldNumber}, WT=5)");
+                    codeBuilder.AppendLine($"            if ({propertyName} != 0f)");
                     codeBuilder.AppendLine("            {");
-                    codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.WriteString(destination.Slice(offset), {propertyName});");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.{propertyName}, 5), out var w1)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w1..]; bytesWritten += w1;");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteFloat32(dst, {propertyName}, out var w2)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w2..]; bytesWritten += w2;");
                     codeBuilder.AppendLine("            }");
                     codeBuilder.AppendLine();
                 }
-                else if (propertyType.TypeKind == TypeKind.Enum)
+                else if (propertyType.SpecialType == SpecialType.System_Int32)
                 {
-                    var underlyingType = ((INamedTypeSymbol)propertyType).EnumUnderlyingType;
-                    if (underlyingType != null)
-                    {
-                        var writeMethod = GetPrimitiveWriteMethod(underlyingType);
-                        var defaultValue = GetDefaultValue(underlyingType);
-                        codeBuilder.AppendLine($"            // Write {propertyName} key");
-                        codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), {GetPropertyKey(property, properties)});");
-                        codeBuilder.AppendLine($"            // Write flag indicating if value is default");
-                        codeBuilder.AppendLine($"            var has{propertyName}Value = ({underlyingType.Name}){propertyName} != {defaultValue};");
-                        codeBuilder.AppendLine($"            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), has{propertyName}Value ? (byte)1 : (byte)0);");
-                        codeBuilder.AppendLine($"            // Write value only if not default");
-                        codeBuilder.AppendLine($"            if (has{propertyName}Value)");
-                        codeBuilder.AppendLine("            {");
-                        codeBuilder.AppendLine($"                offset += Serializer.Runtime.BinarySerializer.{writeMethod}(destination.Slice(offset), ({underlyingType.Name}){propertyName});");
-                        codeBuilder.AppendLine("            }");
-                        codeBuilder.AppendLine();
-                    }
+                    codeBuilder.AppendLine($"            // {propertyName} (field {fieldNumber}, WT=0 via ZigZag)");
+                    codeBuilder.AppendLine($"            if ({propertyName} != 0)");
+                    codeBuilder.AppendLine("            {");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.{propertyName}, 0), out var w1)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w1..]; bytesWritten += w1;");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, Serializer.Runtime.RnsCodec.ZigZag32({propertyName}), out var w2)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w2..]; bytesWritten += w2;");
+                    codeBuilder.AppendLine("            }");
+                    codeBuilder.AppendLine();
                 }
+                else if (propertyType.SpecialType == SpecialType.System_Boolean)
+                {
+                    codeBuilder.AppendLine($"            // {propertyName} (field {fieldNumber}, WT=0)");
+                    codeBuilder.AppendLine($"            if ({propertyName})");
+                    codeBuilder.AppendLine("            {");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, MakeTag(Keys.{propertyName}, 0), out var w1)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w1..]; bytesWritten += w1;");
+                    codeBuilder.AppendLine($"                if (!Serializer.Runtime.RnsCodec.TryWriteVarUInt(dst, 1u, out var w2)) {{ bytesWritten = 0; return false; }}");
+                    codeBuilder.AppendLine($"                dst = dst[w2..]; bytesWritten += w2;");
+                    codeBuilder.AppendLine("            }");
+                    codeBuilder.AppendLine();
+                }
+                // Handle nested objects and arrays would go here, but for now keep it simple
+
+                fieldNumber++;
             }
 
-            // Write terminator byte
-            codeBuilder.AppendLine("            // Write terminator byte");
-            codeBuilder.AppendLine("            offset += Serializer.Runtime.BinarySerializer.WriteByte(destination.Slice(offset), 0xFF);");
-            codeBuilder.AppendLine();
-
-            codeBuilder.AppendLine("            return offset;");
+            codeBuilder.AppendLine("            return true;");
             codeBuilder.AppendLine("        }");
             codeBuilder.AppendLine();
         }
 
         /// <summary>
-        /// Generates the TryRead method for deserialization
+        /// Generates the TryRead method for RNS Binary Spec v1 deserialization with protobuf-style decoding
         /// </summary>
         private static void GenerateTryReadMethod(StringBuilder codeBuilder, INamedTypeSymbol typeSymbol, SemanticModel semanticModel)
         {
             codeBuilder.AppendLine($"        /// <summary>");
-            codeBuilder.AppendLine($"        /// Attempts to read a {typeSymbol.Name} instance from the specified buffer");
+            codeBuilder.AppendLine($"        /// Attempts to read a {typeSymbol.Name} instance from the specified buffer using RNS Binary Spec v1");
             codeBuilder.AppendLine($"        /// </summary>");
-            codeBuilder.AppendLine($"        /// <param name=\"source\">The source buffer</param>");
-            codeBuilder.AppendLine($"        /// <param name=\"value\">The read value</param>");
+            codeBuilder.AppendLine($"        /// <param name=\"buffer\">The source buffer</param>");
+            codeBuilder.AppendLine($"        /// <param name=\"readPacket\">The read packet</param>");
             codeBuilder.AppendLine($"        /// <param name=\"bytesRead\">The number of bytes read</param>");
             codeBuilder.AppendLine($"        /// <returns>True if successful, false otherwise</returns>");
-            codeBuilder.AppendLine($"        public static bool TryRead(System.ReadOnlySpan<byte> source, out {typeSymbol.Name} value, out int bytesRead)");
+            codeBuilder.AppendLine($"        public static bool TryRead(System.ReadOnlySpan<byte> buffer, out {typeSymbol.Name} readPacket, out int bytesRead)");
             codeBuilder.AppendLine("        {");
-            codeBuilder.AppendLine("            value = default!;");
+            codeBuilder.AppendLine($"            readPacket = new {typeSymbol.Name}();");
             codeBuilder.AppendLine("            bytesRead = 0;");
+            codeBuilder.AppendLine("            var src = buffer;");
             codeBuilder.AppendLine();
-            codeBuilder.AppendLine("            try");
+            codeBuilder.AppendLine("            while (!src.IsEmpty)");
             codeBuilder.AppendLine("            {");
-            codeBuilder.AppendLine($"                value = new {typeSymbol.Name}();");
-            codeBuilder.AppendLine("                var offset = 0;");
+            codeBuilder.AppendLine("                if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var tag, out var tr)) return false;");
+            codeBuilder.AppendLine("                src = src[tr..]; bytesRead += tr;");
             codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                // Read properties in key-flag-value format until terminator");
-            codeBuilder.AppendLine("                while (offset < source.Length)");
+            codeBuilder.AppendLine("                var field = (int)(tag >> 3);");
+            codeBuilder.AppendLine("                var wt = (int)(tag & 7);");
+            codeBuilder.AppendLine();
+            codeBuilder.AppendLine("                switch (field)");
             codeBuilder.AppendLine("                {");
-            codeBuilder.AppendLine("                    // Check if we have enough data for key and flag");
-            codeBuilder.AppendLine("                    if (offset + 2 > source.Length) break;");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                    // Read property key and flag");
-            codeBuilder.AppendLine("                    var propertyKey = source[offset];");
-            codeBuilder.AppendLine("                    var hasValue = source[offset + 1] != 0;");
-            codeBuilder.AppendLine("                    offset += 2;");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                    // Check for terminator");
-            codeBuilder.AppendLine("                    if (propertyKey == 0xFF) break;");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                    // Process property based on key");
-            codeBuilder.AppendLine("                    switch (propertyKey)");
-            codeBuilder.AppendLine("                    {");
 
             // Generate switch cases for each property
             var properties = GetSerializableProperties(typeSymbol);
-            var index = 0;
+            var fieldNumber = 1;
             foreach (var property in properties)
             {
                 var propertyType = property.Type;
                 var propertyName = property.Name;
 
-                codeBuilder.AppendLine($"                        case {index}: // {propertyName}");
-                if (IsPrimitiveType(propertyType))
+                if (propertyType.SpecialType == SpecialType.System_String)
                 {
-                    var readMethod = GetPrimitiveReadMethod(propertyType);
-                    codeBuilder.AppendLine("                        {");
-                    codeBuilder.AppendLine($"                            if (hasValue)");
-                    codeBuilder.AppendLine("                            {");
-                    codeBuilder.AppendLine($"                                // Check if there's enough data to read a value");
-                    codeBuilder.AppendLine($"                                if (offset + {GetPrimitiveTypeSize(propertyType)} <= source.Length)");
-                    codeBuilder.AppendLine("                                {");
-                    codeBuilder.AppendLine($"                                    offset += Serializer.Runtime.BinarySerializer.{readMethod}(source.Slice(offset), out var {propertyName}Value);");
-                    codeBuilder.AppendLine($"                                    value.{propertyName} = {propertyName}Value;");
-                    codeBuilder.AppendLine("                                }");
-                    codeBuilder.AppendLine("                            }");
-                    codeBuilder.AppendLine("                            // If no value, keep default");
-                    codeBuilder.AppendLine("                            break;");
-                    codeBuilder.AppendLine("                        }");
+                    codeBuilder.AppendLine($"                    case Keys.{propertyName} when wt == 2:");
+                    codeBuilder.AppendLine("                    {");
+                    codeBuilder.AppendLine("                        if (!Serializer.Runtime.RnsCodec.TryReadString(src, out var s, out var r)) return false;");
+                    codeBuilder.AppendLine("                        src = src[r..]; bytesRead += r;");
+                    codeBuilder.AppendLine($"                        readPacket.{propertyName} = s;");
+                    codeBuilder.AppendLine("                        break;");
+                    codeBuilder.AppendLine("                    }");
                 }
-                else if (propertyType.SpecialType == SpecialType.System_String)
+                else if (propertyType.SpecialType == SpecialType.System_Single)
                 {
-                    codeBuilder.AppendLine("                        {");
-                    codeBuilder.AppendLine($"                            if (hasValue)");
-                    codeBuilder.AppendLine("                            {");
-                    codeBuilder.AppendLine($"                                // Check if there's enough data to read a string (at least 2 bytes for length)");
-                    codeBuilder.AppendLine($"                                if (offset + 2 <= source.Length)");
-                    codeBuilder.AppendLine("                                {");
-                    codeBuilder.AppendLine($"                                    offset += Serializer.Runtime.BinarySerializer.ReadString(source.Slice(offset), out var {propertyName}Value);");
-                    codeBuilder.AppendLine($"                                    value.{propertyName} = {propertyName}Value;");
-                    codeBuilder.AppendLine("                                }");
-                    codeBuilder.AppendLine("                            }");
-                    codeBuilder.AppendLine("                            // If no value, keep default (null/empty)");
-                    codeBuilder.AppendLine("                            break;");
-                    codeBuilder.AppendLine("                        }");
+                    codeBuilder.AppendLine($"                    case Keys.{propertyName} when wt == 5:");
+                    codeBuilder.AppendLine("                    {");
+                    codeBuilder.AppendLine("                        if (!Serializer.Runtime.RnsCodec.TryReadFloat32(src, out var v, out var r)) return false;");
+                    codeBuilder.AppendLine("                        src = src[r..]; bytesRead += r;");
+                    codeBuilder.AppendLine($"                        readPacket.{propertyName} = v;");
+                    codeBuilder.AppendLine("                        break;");
+                    codeBuilder.AppendLine("                    }");
                 }
-                else if (propertyType.TypeKind == TypeKind.Enum)
+                else if (propertyType.SpecialType == SpecialType.System_Int32)
                 {
-                    var underlyingType = ((INamedTypeSymbol)propertyType).EnumUnderlyingType;
-                    if (underlyingType != null)
-                    {
-                        var readMethod = GetPrimitiveReadMethod(underlyingType);
-                        codeBuilder.AppendLine("                        {");
-                        codeBuilder.AppendLine($"                            if (hasValue)");
-                        codeBuilder.AppendLine("                            {");
-                        codeBuilder.AppendLine($"                                // Check if there's enough data to read a value");
-                        codeBuilder.AppendLine($"                                if (offset + {GetPrimitiveTypeSize(underlyingType)} <= source.Length)");
-                        codeBuilder.AppendLine("                                {");
-                        codeBuilder.AppendLine($"                                    offset += Serializer.Runtime.BinarySerializer.{readMethod}(source.Slice(offset), out var {propertyName}Value);");
-                        codeBuilder.AppendLine($"                                    value.{propertyName} = ({propertyType.Name}){propertyName}Value;");
-                        codeBuilder.AppendLine("                            }");
-                        codeBuilder.AppendLine("                            // If no value, keep default");
-                        codeBuilder.AppendLine("                            break;");
-                        codeBuilder.AppendLine("                        }");
-                    }
+                    codeBuilder.AppendLine($"                    case Keys.{propertyName} when wt == 0:");
+                    codeBuilder.AppendLine("                    {");
+                    codeBuilder.AppendLine("                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var zz, out var r)) return false;");
+                    codeBuilder.AppendLine("                        src = src[r..]; bytesRead += r;");
+                    codeBuilder.AppendLine($"                        readPacket.{propertyName} = Serializer.Runtime.RnsCodec.UnZigZag32(zz);");
+                    codeBuilder.AppendLine("                        break;");
+                    codeBuilder.AppendLine("                    }");
                 }
-                index++;
+                else if (propertyType.SpecialType == SpecialType.System_Boolean)
+                {
+                    codeBuilder.AppendLine($"                    case Keys.{propertyName} when wt == 0:");
+                    codeBuilder.AppendLine("                    {");
+                    codeBuilder.AppendLine("                        if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var v, out var r)) return false;");
+                    codeBuilder.AppendLine("                        src = src[r..]; bytesRead += r;");
+                    codeBuilder.AppendLine($"                        readPacket.{propertyName} = v != 0;");
+                    codeBuilder.AppendLine("                        break;");
+                    codeBuilder.AppendLine("                    }");
+                }
+
+                fieldNumber++;
             }
 
-            codeBuilder.AppendLine("                        default:");
-            codeBuilder.AppendLine("                            // Unknown property key, skip to next");
-            codeBuilder.AppendLine("                            break;");
-            codeBuilder.AppendLine("                    }");
+            codeBuilder.AppendLine("                    default:");
+            codeBuilder.AppendLine("                        // Skip unknown");
+            codeBuilder.AppendLine("                        if (!SkipUnknown(ref src, ref bytesRead, wt)) return false;");
+            codeBuilder.AppendLine("                        break;");
             codeBuilder.AppendLine("                }");
-
-            codeBuilder.AppendLine("                bytesRead = offset;");
-            codeBuilder.AppendLine("                return true;");
             codeBuilder.AppendLine("            }");
-            codeBuilder.AppendLine("            catch");
+            codeBuilder.AppendLine();
+            codeBuilder.AppendLine("            return true;");
+            codeBuilder.AppendLine("        }");
+            codeBuilder.AppendLine();
+
+            // Add the SkipUnknown helper method
+            codeBuilder.AppendLine("        private static bool SkipUnknown(ref System.ReadOnlySpan<byte> src, ref int consumed, int wt)");
+            codeBuilder.AppendLine("        {");
+            codeBuilder.AppendLine("            switch (wt)");
             codeBuilder.AppendLine("            {");
-            codeBuilder.AppendLine("                return false;");
+            codeBuilder.AppendLine("                case 0:");
+            codeBuilder.AppendLine("                    if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out _, out var r0)) return false;");
+            codeBuilder.AppendLine("                    src = src[r0..]; consumed += r0; return true;");
+            codeBuilder.AppendLine("                case 1:");
+            codeBuilder.AppendLine("                    if (src.Length < 8) return false;");
+            codeBuilder.AppendLine("                    src = src[8..]; consumed += 8; return true;");
+            codeBuilder.AppendLine("                case 2:");
+            codeBuilder.AppendLine("                    if (!Serializer.Runtime.RnsCodec.TryReadVarUInt(src, out var len, out var r2)) return false;");
+            codeBuilder.AppendLine("                    src = src[r2..];");
+            codeBuilder.AppendLine("                    if (src.Length < len) return false;");
+            codeBuilder.AppendLine("                    src = src[(int)len..]; consumed += r2 + (int)len; return true;");
+            codeBuilder.AppendLine("                case 5:");
+            codeBuilder.AppendLine("                    if (src.Length < 4) return false;");
+            codeBuilder.AppendLine("                    src = src[4..]; consumed += 4; return true;");
+            codeBuilder.AppendLine("                default: return false;");
             codeBuilder.AppendLine("            }");
             codeBuilder.AppendLine("        }");
+            codeBuilder.AppendLine();
+
+            // Add the MakeTag helper method
+            codeBuilder.AppendLine("        private static uint MakeTag(int f, int wt) => (uint)((f << 3) | wt);");
             codeBuilder.AppendLine();
         }
 

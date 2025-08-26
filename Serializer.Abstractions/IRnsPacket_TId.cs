@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Serializer.Abstractions
 {
     /// <summary>
@@ -17,5 +19,6 @@ namespace Serializer.Abstractions
     /// <summary>
     /// Generic interface for network serialzable fields within a packet.
     /// </summary>
+    [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This is intentionally a marker interface for field identification")]
     public interface IRnsPacketField : IRnsPacket { }
 }

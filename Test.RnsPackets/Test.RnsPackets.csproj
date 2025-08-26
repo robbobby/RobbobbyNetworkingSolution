@@ -13,6 +13,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Serializer.Abstractions\Serializer.Abstractions.csproj" />
         <ProjectReference Include="..\Serializer.Runtime\Serializer.Runtime.csproj" />
+        <ProjectReference Include="..\Serializer.Generator\Serializer.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
         <PackageReference Include="xunit" Version="2.4.2" />
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">

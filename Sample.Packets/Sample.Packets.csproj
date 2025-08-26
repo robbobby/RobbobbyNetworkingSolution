@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <OutputType>Exe</OutputType>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <WarningsNotAsErrors>CA1303;CA1515</WarningsNotAsErrors>
+        <MSBuildTreatWarningsAsErrors>false</MSBuildTreatWarningsAsErrors>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj" />
+        <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj" />
+        <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Analyzer Include="../Serializer.Generator/bin/Debug/netstandard2.0/Serializer.Generator.dll" />
+    </ItemGroup>
+
+</Project>

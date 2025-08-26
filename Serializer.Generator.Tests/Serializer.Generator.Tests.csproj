@@ -21,6 +21,7 @@
     <ItemGroup>
         <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj" />
         <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj" />
+        <Analyzer Include="../Serializer.Generator/bin/Release/netstandard2.0/Serializer.Generator.dll" />
     </ItemGroup>
 
 </Project>

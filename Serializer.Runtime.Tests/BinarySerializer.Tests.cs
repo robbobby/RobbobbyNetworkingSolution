@@ -1,4 +1,6 @@
 using System;
+using System.Buffers.Binary;
+using System.Text;
 using Xunit;
 using Serializer.Runtime;
 
@@ -810,6 +812,8 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(8, BinarySerializer.WriteDouble(buffer, 3.141592653589793));
             Assert.Equal(16, BinarySerializer.WriteGuid(buffer, Guid.NewGuid()));
             Assert.Equal(16, BinarySerializer.WriteGuidRfc4122(buffer, Guid.NewGuid()));
+            Assert.Equal(2, BinarySerializer.WriteString(buffer, ""));
+            Assert.Equal(4, BinarySerializer.WriteString(buffer, "Hi"));
         }
 
         [Fact]
@@ -840,6 +844,379 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(int.MaxValue, maxInt32);
             Assert.Equal(long.MinValue, minInt64);
             Assert.Equal(long.MaxValue, maxInt64);
+        }
+
+        #endregion
+
+        #region String Tests
+
+        [Fact]
+        public void WriteString_NullString_WritesLengthZero()
+        {
+            // Arrange
+            var buffer = new byte[2];
+
+            // Act
+            var bytesWritten = BinarySerializer.WriteString(buffer, null);
+
+            // Assert
+            Assert.Equal(2, bytesWritten);
+            Assert.Equal(0, BinaryPrimitives.ReadUInt16LittleEndian(buffer));
+        }
+
+        [Fact]
+        public void WriteString_EmptyString_WritesLengthZero()
+        {
+            // Arrange
+            var buffer = new byte[2];
+
+            // Act
+            var bytesWritten = BinarySerializer.WriteString(buffer, string.Empty);
+
+            // Assert
+            Assert.Equal(2, bytesWritten);
+            Assert.Equal(0, BinaryPrimitives.ReadUInt16LittleEndian(buffer));
+        }
+
+        [Fact]
+        public void WriteString_SimpleAsciiString_WritesCorrectly()
+        {
+            // Arrange
+            var testString = "Hello, World!";
+            var buffer = new byte[20];
+
+            // Act
+            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+
+            // Assert
+            Assert.Equal(2 + testString.Length, bytesWritten);
+            Assert.Equal(testString.Length, BinaryPrimitives.ReadUInt16LittleEndian(buffer));
+            var writtenString = Encoding.UTF8.GetString(buffer, 2, testString.Length);
+            Assert.Equal(testString, writtenString);
+        }
+
+        [Fact]
+        public void WriteString_UnicodeString_WritesCorrectly()
+        {
+            // Arrange
+            var testString = "Hello, 世界! 🌍";
+            var buffer = new byte[50];
+
+            // Act
+            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+
+            // Assert
+            Assert.Equal(2 + Encoding.UTF8.GetByteCount(testString), bytesWritten);
+            var length = BinaryPrimitives.ReadUInt16LittleEndian(buffer);
+            Assert.Equal(Encoding.UTF8.GetByteCount(testString), length);
+            var writtenString = Encoding.UTF8.GetString(buffer, 2, length);
+            Assert.Equal(testString, writtenString);
+        }
+
+        [Fact]
+        public void WriteString_MaxLengthString_WritesCorrectly()
+        {
+            // Arrange
+            var testString = new string('A', ushort.MaxValue);
+            var buffer = new byte[ushort.MaxValue + 2];
+
+            // Act
+            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+
+            // Assert
+            Assert.Equal(2 + ushort.MaxValue, bytesWritten);
+            Assert.Equal(ushort.MaxValue, BinaryPrimitives.ReadUInt16LittleEndian(buffer));
+        }
+
+        [Fact]
+        public void WriteString_StringTooLong_ThrowsArgumentException()
+        {
+            // Arrange
+            var testString = new string('A', ushort.MaxValue + 1);
+            var buffer = new byte[ushort.MaxValue + 3];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, testString));
+            Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("value", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteString_BufferTooSmallForLengthPrefix_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[1];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, "test"));
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteString_BufferTooSmallForContent_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[3]; // Only enough for length prefix + 1 byte
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, "test"));
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", exception.ParamName);
+        }
+
+        [Fact]
+        public void ReadString_LengthZero_ReturnsEmptyString()
+        {
+            // Arrange
+            var buffer = new byte[2];
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer, 0);
+
+            // Act
+            var bytesRead = BinarySerializer.ReadString(buffer, out var value);
+
+            // Assert
+            Assert.Equal(2, bytesRead);
+            Assert.Equal(string.Empty, value);
+        }
+
+        [Fact]
+        public void ReadString_SimpleAsciiString_ReadsCorrectly()
+        {
+            // Arrange
+            var testString = "Hello, World!";
+            var buffer = new byte[20];
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer, (ushort)testString.Length);
+            Encoding.UTF8.GetBytes(testString).CopyTo(buffer, 2);
+
+            // Act
+            var bytesRead = BinarySerializer.ReadString(buffer, out var value);
+
+            // Assert
+            Assert.Equal(2 + testString.Length, bytesRead);
+            Assert.Equal(testString, value);
+        }
+
+        [Fact]
+        public void ReadString_UnicodeString_ReadsCorrectly()
+        {
+            // Arrange
+            var testString = "Hello, 世界! 🌍";
+            var buffer = new byte[50];
+            var stringBytes = Encoding.UTF8.GetBytes(testString);
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer, (ushort)stringBytes.Length);
+            stringBytes.CopyTo(buffer, 2);
+
+            // Act
+            var bytesRead = BinarySerializer.ReadString(buffer, out var value);
+
+            // Assert
+            Assert.Equal(2 + stringBytes.Length, bytesRead);
+            Assert.Equal(testString, value);
+        }
+
+        [Fact]
+        public void ReadString_BufferTooSmallForLengthPrefix_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[1];
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadString(buffer, out _));
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
+        }
+
+        [Fact]
+        public void ReadString_BufferTooSmallForContent_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = new byte[4]; // Length prefix + 2 bytes
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer, 10); // Claim string is 10 bytes
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadString(buffer, out _));
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("source", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteString_ReadString_RoundTrip()
+        {
+            // Arrange
+            var testString = "Hello, 世界! 🌍";
+            var buffer = new byte[100];
+
+            // Act - Write
+            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+
+            // Act - Read
+            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+
+            // Assert
+            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(testString, readString);
+        }
+
+        [Fact]
+        public void WriteString_ReadString_RoundTrip_Null()
+        {
+            // Arrange
+            var buffer = new byte[2];
+
+            // Act - Write
+            var bytesWritten = BinarySerializer.WriteString(buffer, null);
+
+            // Act - Read
+            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+
+            // Assert
+            Assert.Equal(2, bytesWritten);
+            Assert.Equal(2, bytesRead);
+            Assert.Equal(string.Empty, readString);
+        }
+
+        [Fact]
+        public void WriteString_ReadString_RoundTrip_Empty()
+        {
+            // Arrange
+            var buffer = new byte[2];
+
+            // Act - Write
+            var bytesWritten = BinarySerializer.WriteString(buffer, string.Empty);
+
+            // Act - Read
+            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+
+            // Assert
+            Assert.Equal(2, bytesWritten);
+            Assert.Equal(2, bytesRead);
+            Assert.Equal(string.Empty, readString);
+        }
+
+        [Fact]
+        public void WriteString_ReadString_RoundTrip_MaxLength()
+        {
+            // Arrange
+            var testString = new string('A', ushort.MaxValue);
+            var buffer = new byte[ushort.MaxValue + 2];
+
+            // Act - Write
+            var bytesWritten = BinarySerializer.WriteString(buffer, testString);
+
+            // Act - Read
+            var bytesRead = BinarySerializer.ReadString(buffer, out var readString);
+
+            // Assert
+            Assert.Equal(2 + ushort.MaxValue, bytesWritten);
+            Assert.Equal(2 + ushort.MaxValue, bytesRead);
+            Assert.Equal(testString, readString);
+        }
+
+        [Fact]
+        public void ReadString_InvalidUtf8_ThrowsDecoderFallbackException()
+        {
+            // Arrange: length=2, bytes 0xC3 0x28 is invalid UTF-8
+            var buffer = new byte[] { 0x02, 0x00, 0xC3, 0x28 };
+
+            // Act & Assert
+            Assert.Throws<DecoderFallbackException>(() => BinarySerializer.ReadString(buffer, out _));
+        }
+
+        [Fact]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Test code only - deterministic seed for reproducible tests")]
+        public void WriteString_ReadString_RoundTrip_RandomUnicode()
+        {
+            var rnd = new Random(12345);
+            for (int i = 0; i < 200; i++)
+            {
+                var s = CreateRandomUnicodeString(rnd, maxChars: 100);
+                var buf = new byte[2 + Encoding.UTF8.GetByteCount(s)];
+                var written = BinarySerializer.WriteString(buf, s);
+                var read = BinarySerializer.ReadString(buf, out var back);
+                Assert.Equal(written, read);
+                Assert.Equal(s, back);
+            }
+
+            static string CreateRandomUnicodeString(Random r, int maxChars)
+            {
+                int len = r.Next(0, maxChars + 1);
+                var sb = new StringBuilder(len);
+                for (int i = 0; i < len; i++)
+                {
+                    int choice = r.Next(4);
+                    int codePoint = choice switch
+                    {
+                        0 => r.Next(0x20, 0x7F),           // ASCII
+                        1 => r.Next(0x80, 0x7FF),          // 2-byte UTF-8
+                        2 => r.Next(0x800, 0xD7FF),        // 3-byte, excluding surrogates
+                        _ => r.Next(0xE000, 0xFFFF)        // 3-byte BMP non-surrogate
+                    };
+                    sb.Append((char)codePoint);
+                }
+                return sb.ToString();
+            }
+        }
+
+        [Fact]
+        public void GetStringSerializedSize_ReturnsCorrectSizes()
+        {
+            // Test null and empty strings
+            Assert.Equal(2, BinarySerializer.GetStringSerializedSize(null));
+            Assert.Equal(2, BinarySerializer.GetStringSerializedSize(string.Empty));
+
+            // Test simple ASCII strings
+            Assert.Equal(4, BinarySerializer.GetStringSerializedSize("Hi"));
+            Assert.Equal(15, BinarySerializer.GetStringSerializedSize("Hello, World!"));
+
+            // Test Unicode strings
+            var unicodeString = "Hello, 世界! 🌍";
+            var expectedSize = 2 + Encoding.UTF8.GetByteCount(unicodeString);
+            Assert.Equal(expectedSize, BinarySerializer.GetStringSerializedSize(unicodeString));
+        }
+
+        [Fact]
+        public void GetStringSerializedSize_StringTooLong_ThrowsArgumentException()
+        {
+            // Arrange
+            var testString = new string('A', ushort.MaxValue + 1);
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.GetStringSerializedSize(testString));
+            Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("value", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteString_ReadString_RoundTrip_EmbeddedNull()
+        {
+            // Arrange: String with embedded NUL characters
+            var s = "a\0b\0c";
+            var buf = new byte[2 + Encoding.UTF8.GetByteCount(s)];
+
+            // Act - Write
+            var written = BinarySerializer.WriteString(buf, s);
+
+            // Act - Read
+            var read = BinarySerializer.ReadString(buf, out var back);
+
+            // Assert
+            Assert.Equal(written, read);
+            Assert.Equal(s, back);
+        }
+
+        [Fact]
+        public void GetStringSerializedSize_TooLongMultiByte_Throws()
+        {
+            // Arrange: Create a string with multi-byte characters that exceeds 65535 bytes
+            // Each emoji is 4 bytes in UTF-8, so we need > 16383 emojis to exceed the limit
+            var emoji = "😀"; // U+1F600, 4 bytes in UTF-8
+            var s = string.Join("", Enumerable.Repeat(emoji, 17000)); // 17000 * 4 = 68000 bytes > 65535
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.GetStringSerializedSize(s));
+            Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("value", exception.ParamName);
         }
 
         #endregion

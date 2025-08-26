@@ -1,5 +1,19 @@
 # SerializerStack — Full Task List
 
+## **📊 Current Progress: Components A–C Complete (3 total)**
+
+### **✅ Completed Components:**
+
+- **A. Repository Infrastructure** - 100% Complete
+- **B. Serializer.Abstractions** - 100% Complete  
+- **C. Serializer.Runtime** - 100% Complete
+
+### **🔄 Next Priority:**
+
+- **D. Serializer.Generator** - Roslyn source generator setup
+
+---
+
 ## A. Repository -- COMPLETE
 
 * [ ] Create mono-repo with solution `RobbobbyNetworkingSolution.sln`.
@@ -52,7 +66,7 @@
 
 ---
 
-## C. Serializer.Runtime
+## C. Serializer.Runtime -- COMPLETE
 
 * [x] Implement `BinarySerializer`:
 
@@ -62,7 +76,8 @@
     * Int16, UInt16, Int32, UInt32, Int64, UInt64.
     * Single, Double.
     * Guid (16 bytes).
-  * [ ] Write/Read string (UInt16 length prefix, UTF-8 encoded).
+  - [x] Write/Read string (UInt16 length prefix, UTF-8 encoded).
+        Note: null and empty are encoded identically with length 0. Read returns empty string.
 * [x] Add guard methods for span length & overflow.
 * [x] Unit tests:
 

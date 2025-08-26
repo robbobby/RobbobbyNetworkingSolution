@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Generated serialization code
+#nullable enable
+using System;
 using System.Collections.Generic;
 using Serializer.Runtime;
 using Serializer.Generator.Runtime;
@@ -65,7 +67,8 @@ namespace Serializer.Generator.Tests
                     switch (key)
                     {
                         case Keys.Name:
-                            consumed += RndCodec.ReadString(buffer.Slice(consumed), out readPacket.Name);
+                            consumed += RndCodec.ReadString(buffer.Slice(consumed), out var NameValue);
+                            readPacket.Name = NameValue;
                             break;
                         default:
                             // Unknown key - skip len bytes

@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Generated serialization code
+#nullable enable
+using System;
 using System.Collections.Generic;
 using Serializer.Runtime;
 using Serializer.Generator.Runtime;
@@ -95,19 +97,23 @@ namespace Serializer.Generator.Tests
                     switch (key)
                     {
                         case Keys.PlayerName:
-                            consumed += RndCodec.ReadString(buffer.Slice(consumed), out readPacket.PlayerName);
+                            consumed += RndCodec.ReadString(buffer.Slice(consumed), out var PlayerNameValue);
+                            readPacket.PlayerName = PlayerNameValue;
                             break;
                         case Keys.X:
                             if (len != 4) return false;
-                            consumed += RndCodec.ReadSingle(buffer.Slice(consumed), out readPacket.X);
+                            consumed += RndCodec.ReadSingle(buffer.Slice(consumed), out var XValue);
+                            readPacket.X = XValue;
                             break;
                         case Keys.Y:
                             if (len != 4) return false;
-                            consumed += RndCodec.ReadSingle(buffer.Slice(consumed), out readPacket.Y);
+                            consumed += RndCodec.ReadSingle(buffer.Slice(consumed), out var YValue);
+                            readPacket.Y = YValue;
                             break;
                         case Keys.Health:
                             if (len != 4) return false;
-                            consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out readPacket.Health);
+                            consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var HealthValue);
+                            readPacket.Health = HealthValue;
                             break;
                         default:
                             // Unknown key - skip len bytes

@@ -470,7 +470,9 @@ namespace Serializer.Generator.Runtime
         private static void GenerateReadNestedCase(StringBuilder codeBuilder, IPropertySymbol property)
         {
             var propertyName = property.Name;
-            var typeName = property.Type.ToDisplayString();
+            var fullTypeName = property.Type.ToDisplayString();
+            // Remove nullable annotation if present
+            var typeName = fullTypeName.Replace("?", "");
             
             codeBuilder.AppendLine($"                            if ({typeName}.TryRead(buffer.Slice(consumed, len), out var {propertyName}Value, out var {propertyName}Read))");
             codeBuilder.AppendLine("                            {");
@@ -485,7 +487,9 @@ namespace Serializer.Generator.Runtime
         private static void GenerateReadArrayCase(StringBuilder codeBuilder, IPropertySymbol property)
         {
             var propertyName = property.Name;
-            var elementType = ((IArrayTypeSymbol)property.Type).ElementType.ToDisplayString();
+            var fullElementType = ((IArrayTypeSymbol)property.Type).ElementType.ToDisplayString();
+            // Remove nullable annotation if present
+            var elementType = fullElementType.Replace("?", "");
             
             codeBuilder.AppendLine("                            var arrayStart = consumed;");
             codeBuilder.AppendLine("                            consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var count);");

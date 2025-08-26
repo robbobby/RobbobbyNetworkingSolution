@@ -58,3 +58,4 @@ BenchmarkDotNet.Artifacts/
 # Task documentation (internal use only)
 docs/tasks/
 node_modules
+scripts/private

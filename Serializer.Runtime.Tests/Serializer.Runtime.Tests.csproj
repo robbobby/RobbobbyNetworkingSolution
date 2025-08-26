@@ -7,7 +7,8 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <!-- Disable CA1515 for test projects since test classes need to be public -->
-        <NoWarn>$(NoWarn);CA1515</NoWarn>
+        <!-- Disable CA1707 for test projects since test methods often use underscores for readability -->
+        <NoWarn>$(NoWarn);CA1515;CA1707</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,6 +16,10 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
         <PackageReference Include="xunit" Version="2.6.6"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Serializer.Runtime\Serializer.Runtime.csproj" />
     </ItemGroup>
 
 </Project>

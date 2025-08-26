@@ -949,7 +949,7 @@ namespace Serializer.Runtime.Tests
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, "test"));
-            Assert.Contains("Insufficient buffer space for string length prefix", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
 
@@ -961,7 +961,7 @@ namespace Serializer.Runtime.Tests
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteString(buffer, "test"));
-            Assert.Contains("Insufficient buffer space", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("destination", exception.ParamName);
         }
 
@@ -1023,7 +1023,7 @@ namespace Serializer.Runtime.Tests
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadString(buffer, out _));
-            Assert.Contains("Insufficient buffer space for string length prefix", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
 
@@ -1036,7 +1036,7 @@ namespace Serializer.Runtime.Tests
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadString(buffer, out _));
-            Assert.Contains("Insufficient buffer space for string content", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("Buffer too small for string", exception.Message, StringComparison.Ordinal);
             Assert.Equal("source", exception.ParamName);
         }
 
@@ -1111,6 +1111,80 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(2 + ushort.MaxValue, bytesWritten);
             Assert.Equal(2 + ushort.MaxValue, bytesRead);
             Assert.Equal(testString, readString);
+        }
+
+        [Fact]
+        public void ReadString_InvalidUtf8_ThrowsDecoderFallbackException()
+        {
+            // Arrange: length=2, bytes 0xC3 0x28 is invalid UTF-8
+            var buffer = new byte[] { 0x02, 0x00, 0xC3, 0x28 };
+
+            // Act & Assert
+            Assert.Throws<DecoderFallbackException>(() => BinarySerializer.ReadString(buffer, out _));
+        }
+
+        [Fact]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Test code only - deterministic seed for reproducible tests")]
+        public void WriteString_ReadString_RoundTrip_RandomUnicode()
+        {
+            var rnd = new Random(12345);
+            for (int i = 0; i < 200; i++)
+            {
+                var s = CreateRandomUnicodeString(rnd, maxChars: 100);
+                var buf = new byte[2 + Encoding.UTF8.GetByteCount(s)];
+                var written = BinarySerializer.WriteString(buf, s);
+                var read = BinarySerializer.ReadString(buf, out var back);
+                Assert.Equal(written, read);
+                Assert.Equal(s, back);
+            }
+
+            static string CreateRandomUnicodeString(Random r, int maxChars)
+            {
+                int len = r.Next(0, maxChars + 1);
+                var sb = new StringBuilder(len);
+                for (int i = 0; i < len; i++)
+                {
+                    int choice = r.Next(4);
+                    int codePoint = choice switch
+                    {
+                        0 => r.Next(0x20, 0x7F),           // ASCII
+                        1 => r.Next(0x80, 0x7FF),          // 2-byte UTF-8
+                        2 => r.Next(0x800, 0xD7FF),        // 3-byte, excluding surrogates
+                        _ => r.Next(0xE000, 0xFFFF)        // 3-byte BMP non-surrogate
+                    };
+                    sb.Append((char)codePoint);
+                }
+                return sb.ToString();
+            }
+        }
+
+        [Fact]
+        public void GetStringSerializedSize_ReturnsCorrectSizes()
+        {
+            // Test null and empty strings
+            Assert.Equal(2, BinarySerializer.GetStringSerializedSize(null));
+            Assert.Equal(2, BinarySerializer.GetStringSerializedSize(string.Empty));
+
+            // Test simple ASCII strings
+            Assert.Equal(4, BinarySerializer.GetStringSerializedSize("Hi"));
+            Assert.Equal(15, BinarySerializer.GetStringSerializedSize("Hello, World!"));
+
+            // Test Unicode strings
+            var unicodeString = "Hello, 世界! 🌍";
+            var expectedSize = 2 + Encoding.UTF8.GetByteCount(unicodeString);
+            Assert.Equal(expectedSize, BinarySerializer.GetStringSerializedSize(unicodeString));
+        }
+
+        [Fact]
+        public void GetStringSerializedSize_StringTooLong_ThrowsArgumentException()
+        {
+            // Arrange
+            var testString = new string('A', ushort.MaxValue + 1);
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.GetStringSerializedSize(testString));
+            Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("value", exception.ParamName);
         }
 
         #endregion

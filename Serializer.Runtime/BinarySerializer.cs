@@ -14,6 +14,9 @@ namespace Serializer.Runtime
     {
         private const int GuidSize = 16;
 
+        // Strict UTF-8 encoding that throws on invalid sequences
+        private static readonly Encoding Utf8Strict = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         private static void EnsureSize(int required, int actual, string typeName, string paramName)
         {
             if (actual < required)
@@ -512,27 +515,32 @@ namespace Serializer.Runtime
         {
             if (value == null)
             {
-                if (destination.Length < 2)
-                    throw new ArgumentException("Insufficient buffer space for null string length prefix", nameof(destination));
-
+                EnsureSize(2, destination.Length, "string", nameof(destination));
                 WriteUInt16(destination, 0);
                 return 2;
             }
 
-            if (destination.Length < 2)
-                throw new ArgumentException("Insufficient buffer space for string length prefix", nameof(destination));
+            // Fast-path for empty string (no encoding needed)
+            if (value.Length == 0)
+            {
+                EnsureSize(2, destination.Length, "string", nameof(destination));
+                WriteUInt16(destination, 0);
+                return 2;
+            }
 
-            var bytes = Encoding.UTF8.GetBytes(value);
-            if (bytes.Length > ushort.MaxValue)
-                throw new ArgumentException($"String too long: {bytes.Length} bytes exceeds maximum {ushort.MaxValue}", nameof(value));
+            EnsureSize(2, destination.Length, "string", nameof(destination));
 
-            if (destination.Length < 2 + bytes.Length)
-                throw new ArgumentException($"Insufficient buffer space: need {2 + bytes.Length}, have {destination.Length}", nameof(destination));
+            int byteCount = Utf8Strict.GetByteCount(value);
+            if (byteCount > ushort.MaxValue)
+                throw new ArgumentException($"String too long: {byteCount} bytes exceeds maximum {ushort.MaxValue}", nameof(value));
 
-            WriteUInt16(destination, (ushort)bytes.Length);
-            bytes.CopyTo(destination.Slice(2));
+            EnsureSize(2 + byteCount, destination.Length, "string", nameof(destination));
 
-            return 2 + bytes.Length;
+            WriteUInt16(destination, (ushort)byteCount);
+            int written = Utf8Strict.GetBytes(value.AsSpan(), destination.Slice(2));
+            System.Diagnostics.Debug.Assert(written == byteCount);
+
+            return 2 + byteCount;
         }
 
         /// <summary>
@@ -544,10 +552,9 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadString(ReadOnlySpan<byte> source, out string value)
         {
-            if (source.Length < 2)
-                throw new ArgumentException("Insufficient buffer space for string length prefix", nameof(source));
+            EnsureSize(2, source.Length, "string", nameof(source));
 
-            var length = ReadUInt16(source, out var lengthValue);
+            ReadUInt16(source, out var lengthValue);
 
             if (lengthValue == 0)
             {
@@ -555,11 +562,28 @@ namespace Serializer.Runtime
                 return 2;
             }
 
-            if (source.Length < 2 + lengthValue)
-                throw new ArgumentException($"Insufficient buffer space for string content: need {2 + lengthValue}, have {source.Length}", nameof(source));
+            EnsureSize(2 + lengthValue, source.Length, "string", nameof(source));
 
-            value = Encoding.UTF8.GetString(source.Slice(2, lengthValue));
+            value = Utf8Strict.GetString(source.Slice(2, lengthValue));
             return 2 + lengthValue;
+        }
+
+        /// <summary>
+        /// Gets the serialized size of a string value without actually writing it.
+        /// </summary>
+        /// <param name="value">The string value to measure, or null.</param>
+        /// <returns>The number of bytes that would be written (2 for length prefix + string bytes).</returns>
+        /// <exception cref="ArgumentException">Thrown when string is too long to serialize.</exception>
+        public static int GetStringSerializedSize(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return 2;
+
+            int byteCount = Utf8Strict.GetByteCount(value);
+            if (byteCount > ushort.MaxValue)
+                throw new ArgumentException($"String too long: {byteCount} bytes exceeds maximum {ushort.MaxValue}", nameof(value));
+
+            return 2 + byteCount;
         }
 
         #endregion

@@ -17,5 +17,6 @@ namespace Serializer.Abstractions
     /// <summary>
     /// Generic interface for network serialzable fields within a packet.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This is intentionally a marker interface for packet field identification")]
     public interface IRnsPacketField : IRnsPacket { }
 }

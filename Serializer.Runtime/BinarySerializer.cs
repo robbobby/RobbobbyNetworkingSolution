@@ -13,6 +13,20 @@ namespace Serializer.Runtime
     {
         private const int GuidSize = 16;
 
+        private static void EnsureSize(int required, int actual, string typeName, string paramName)
+        {
+            if (actual < required)
+                throw new ArgumentException($"Buffer too small for {typeName}; need {required}, have {actual}.", paramName);
+        }
+
+        private static void Reverse4(Span<byte> s)
+        {
+            (s[0], s[3]) = (s[3], s[0]);
+            (s[1], s[2]) = (s[2], s[1]);
+        }
+
+        private static void Reverse2(Span<byte> s) => (s[0], s[1]) = (s[1], s[0]);
+
         #region Boolean
 
         /// <summary>
@@ -24,8 +38,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteBoolean(Span<byte> destination, bool value)
         {
-            if (destination.Length < sizeof(bool))
-                throw new ArgumentException($"Buffer too small for boolean; need {sizeof(bool)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(bool), destination.Length, "boolean", nameof(destination));
 
             destination[0] = value ? (byte)1 : (byte)0;
             return sizeof(bool);
@@ -40,8 +53,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadBoolean(ReadOnlySpan<byte> source, out bool value)
         {
-            if (source.Length < sizeof(bool))
-                throw new ArgumentException($"Buffer too small for boolean; need {sizeof(bool)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(bool), source.Length, "boolean", nameof(source));
 
             value = source[0] != 0;
             return sizeof(bool);
@@ -57,8 +69,7 @@ namespace Serializer.Runtime
         /// <exception cref="FormatException">Thrown when the encoded value is not 0 or 1.</exception>
         public static int ReadBooleanStrict(ReadOnlySpan<byte> source, out bool value)
         {
-            if (source.Length < sizeof(bool))
-                throw new ArgumentException($"Buffer too small for boolean; need {sizeof(bool)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(bool), source.Length, "boolean", nameof(source));
 
             byte b = source[0];
             if (b != 0 && b != 1)
@@ -81,8 +92,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteByte(Span<byte> destination, byte value)
         {
-            if (destination.Length < sizeof(byte))
-                throw new ArgumentException($"Buffer too small for byte; need {sizeof(byte)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(byte), destination.Length, "byte", nameof(destination));
 
             destination[0] = value;
             return sizeof(byte);
@@ -97,8 +107,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadByte(ReadOnlySpan<byte> source, out byte value)
         {
-            if (source.Length < sizeof(byte))
-                throw new ArgumentException($"Buffer too small for byte; need {sizeof(byte)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(byte), source.Length, "byte", nameof(source));
 
             value = source[0];
             return sizeof(byte);
@@ -117,8 +126,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteSByte(Span<byte> destination, sbyte value)
         {
-            if (destination.Length < sizeof(sbyte))
-                throw new ArgumentException($"Buffer too small for sbyte; need {sizeof(sbyte)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(sbyte), destination.Length, "sbyte", nameof(destination));
 
             destination[0] = (byte)value;
             return sizeof(sbyte);
@@ -133,8 +141,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadSByte(ReadOnlySpan<byte> source, out sbyte value)
         {
-            if (source.Length < sizeof(sbyte))
-                throw new ArgumentException($"Buffer too small for sbyte; need {sizeof(sbyte)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(sbyte), source.Length, "sbyte", nameof(source));
 
             value = (sbyte)source[0];
             return sizeof(sbyte);
@@ -153,8 +160,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteInt16(Span<byte> destination, short value)
         {
-            if (destination.Length < sizeof(short))
-                throw new ArgumentException($"Buffer too small for Int16; need {sizeof(short)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(short), destination.Length, "Int16", nameof(destination));
 
             BinaryPrimitives.WriteInt16LittleEndian(destination, value);
             return sizeof(short);
@@ -169,8 +175,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadInt16(ReadOnlySpan<byte> source, out short value)
         {
-            if (source.Length < sizeof(short))
-                throw new ArgumentException($"Buffer too small for Int16; need {sizeof(short)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(short), source.Length, "Int16", nameof(source));
 
             value = BinaryPrimitives.ReadInt16LittleEndian(source);
             return sizeof(short);
@@ -189,8 +194,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteUInt16(Span<byte> destination, ushort value)
         {
-            if (destination.Length < sizeof(ushort))
-                throw new ArgumentException($"Buffer too small for UInt16; need {sizeof(ushort)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(ushort), destination.Length, "UInt16", nameof(destination));
 
             BinaryPrimitives.WriteUInt16LittleEndian(destination, value);
             return sizeof(ushort);
@@ -205,8 +209,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadUInt16(ReadOnlySpan<byte> source, out ushort value)
         {
-            if (source.Length < sizeof(ushort))
-                throw new ArgumentException($"Buffer too small for UInt16; need {sizeof(ushort)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(ushort), source.Length, "UInt16", nameof(source));
 
             value = BinaryPrimitives.ReadUInt16LittleEndian(source);
             return sizeof(ushort);
@@ -225,8 +228,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteInt32(Span<byte> destination, int value)
         {
-            if (destination.Length < sizeof(int))
-                throw new ArgumentException($"Buffer too small for Int32; need {sizeof(int)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(int), destination.Length, "Int32", nameof(destination));
 
             BinaryPrimitives.WriteInt32LittleEndian(destination, value);
             return sizeof(int);
@@ -241,8 +243,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadInt32(ReadOnlySpan<byte> source, out int value)
         {
-            if (source.Length < sizeof(int))
-                throw new ArgumentException($"Buffer too small for Int32; need {sizeof(int)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(int), source.Length, "Int32", nameof(source));
 
             value = BinaryPrimitives.ReadInt32LittleEndian(source);
             return sizeof(int);
@@ -261,8 +262,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteUInt32(Span<byte> destination, uint value)
         {
-            if (destination.Length < sizeof(uint))
-                throw new ArgumentException($"Buffer too small for UInt32; need {sizeof(uint)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(uint), destination.Length, "UInt32", nameof(destination));
 
             BinaryPrimitives.WriteUInt32LittleEndian(destination, value);
             return sizeof(uint);
@@ -277,8 +277,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadUInt32(ReadOnlySpan<byte> source, out uint value)
         {
-            if (source.Length < sizeof(uint))
-                throw new ArgumentException($"Buffer too small for UInt32; need {sizeof(uint)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(uint), source.Length, "UInt32", nameof(source));
 
             value = BinaryPrimitives.ReadUInt32LittleEndian(source);
             return sizeof(uint);
@@ -297,8 +296,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteInt64(Span<byte> destination, long value)
         {
-            if (destination.Length < sizeof(long))
-                throw new ArgumentException($"Buffer too small for Int64; need {sizeof(long)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(long), destination.Length, "Int64", nameof(destination));
 
             BinaryPrimitives.WriteInt64LittleEndian(destination, value);
             return sizeof(long);
@@ -313,8 +311,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadInt64(ReadOnlySpan<byte> source, out long value)
         {
-            if (source.Length < sizeof(long))
-                throw new ArgumentException($"Buffer too small for Int64; need {sizeof(long)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(long), source.Length, "Int64", nameof(source));
 
             value = BinaryPrimitives.ReadInt64LittleEndian(source);
             return sizeof(long);
@@ -333,8 +330,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteUInt64(Span<byte> destination, ulong value)
         {
-            if (destination.Length < sizeof(ulong))
-                throw new ArgumentException($"Buffer too small for UInt64; need {sizeof(ulong)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(ulong), destination.Length, "UInt64", nameof(destination));
 
             BinaryPrimitives.WriteUInt64LittleEndian(destination, value);
             return sizeof(ulong);
@@ -349,8 +345,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadUInt64(ReadOnlySpan<byte> source, out ulong value)
         {
-            if (source.Length < sizeof(ulong))
-                throw new ArgumentException($"Buffer too small for UInt64; need {sizeof(ulong)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(ulong), source.Length, "UInt64", nameof(source));
 
             value = BinaryPrimitives.ReadUInt64LittleEndian(source);
             return sizeof(ulong);
@@ -369,8 +364,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteSingle(Span<byte> destination, float value)
         {
-            if (destination.Length < sizeof(float))
-                throw new ArgumentException($"Buffer too small for Single; need {sizeof(float)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(float), destination.Length, "Single", nameof(destination));
 
             BinaryPrimitives.WriteInt32LittleEndian(destination, BitConverter.SingleToInt32Bits(value));
             return sizeof(float);
@@ -385,8 +379,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadSingle(ReadOnlySpan<byte> source, out float value)
         {
-            if (source.Length < sizeof(float))
-                throw new ArgumentException($"Buffer too small for Single; need {sizeof(float)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(float), source.Length, "Single", nameof(source));
 
             value = BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(source));
             return sizeof(float);
@@ -405,8 +398,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteDouble(Span<byte> destination, double value)
         {
-            if (destination.Length < sizeof(double))
-                throw new ArgumentException($"Buffer too small for Double; need {sizeof(double)}, have {destination.Length}.", nameof(destination));
+            EnsureSize(sizeof(double), destination.Length, "Double", nameof(destination));
 
             BinaryPrimitives.WriteInt64LittleEndian(destination, BitConverter.DoubleToInt64Bits(value));
             return sizeof(double);
@@ -421,8 +413,7 @@ namespace Serializer.Runtime
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadDouble(ReadOnlySpan<byte> source, out double value)
         {
-            if (source.Length < sizeof(double))
-                throw new ArgumentException($"Buffer too small for Double; need {sizeof(double)}, have {source.Length}.", nameof(source));
+            EnsureSize(sizeof(double), source.Length, "Double", nameof(source));
 
             value = BitConverter.Int64BitsToDouble(BinaryPrimitives.ReadInt64LittleEndian(source));
             return sizeof(double);
@@ -433,33 +424,31 @@ namespace Serializer.Runtime
         #region Guid
 
         /// <summary>
-        /// Writes a GUID value to the specified buffer.
+        /// Writes a Guid value to the specified buffer.
         /// </summary>
         /// <param name="destination">The destination buffer.</param>
-        /// <param name="value">The GUID value to write.</param>
+        /// <param name="value">The Guid value to write.</param>
         /// <returns>The number of bytes written (16).</returns>
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteGuid(Span<byte> destination, Guid value)
         {
-            if (destination.Length < GuidSize)
-                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {destination.Length}.", nameof(destination));
+            EnsureSize(GuidSize, destination.Length, "Guid", nameof(destination));
 
-            _ = value.TryWriteBytes(destination);
+            System.Diagnostics.Debug.Assert(value.TryWriteBytes(destination), "TryWriteBytes should succeed with a 16-byte buffer.");
 
             return GuidSize;
         }
 
         /// <summary>
-        /// Reads a GUID value from the specified buffer.
+        /// Reads a Guid value from the specified buffer.
         /// </summary>
         /// <param name="source">The source buffer.</param>
-        /// <param name="value">The read GUID value.</param>
+        /// <param name="value">The read Guid value.</param>
         /// <returns>The number of bytes read (16).</returns>
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadGuid(ReadOnlySpan<byte> source, out Guid value)
         {
-            if (source.Length < GuidSize)
-                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {source.Length}.", nameof(source));
+            EnsureSize(GuidSize, source.Length, "Guid", nameof(source));
 
             value = new Guid(source);
             return GuidSize;
@@ -469,22 +458,18 @@ namespace Serializer.Runtime
         /// Writes a Guid in RFC 4122 byte order (network/big-endian for all fields).
         /// </summary>
         /// <param name="destination">The destination buffer.</param>
-        /// <param name="value">The GUID value to write.</param>
+        /// <param name="value">The Guid value to write.</param>
         /// <returns>The number of bytes written (16).</returns>
         /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
         public static int WriteGuidRfc4122(Span<byte> destination, Guid value)
         {
-            if (destination.Length < GuidSize)
-                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {destination.Length}.", nameof(destination));
+            EnsureSize(GuidSize, destination.Length, "Guid", nameof(destination));
 
-            Span<byte> tmp = stackalloc byte[GuidSize];
-            value.TryWriteBytes(tmp); // .NET mixed-endian layout
-
-            // Convert to RFC 4122 layout by reversing the first 4, next 2, next 2 bytes
-            destination[0] = tmp[3]; destination[1] = tmp[2]; destination[2] = tmp[1]; destination[3] = tmp[0];
-            destination[4] = tmp[5]; destination[5] = tmp[4];
-            destination[6] = tmp[7]; destination[7] = tmp[6];
-            tmp.Slice(8).CopyTo(destination.Slice(8));
+            // Write .NET mixed-endian layout then reverse the first 4/2/2 bytes in place to get RFC 4122 order
+            System.Diagnostics.Debug.Assert(value.TryWriteBytes(destination), "TryWriteBytes should succeed with a 16-byte buffer.");
+            Reverse4(destination.Slice(0, 4));
+            Reverse2(destination.Slice(4, 2));
+            Reverse2(destination.Slice(6, 2));
 
             return GuidSize;
         }
@@ -493,13 +478,12 @@ namespace Serializer.Runtime
         /// Reads a Guid from RFC 4122 byte order (network/big-endian for all fields).
         /// </summary>
         /// <param name="source">The source buffer.</param>
-        /// <param name="value">The read GUID value.</param>
+        /// <param name="value">The read Guid value.</param>
         /// <returns>The number of bytes read (16).</returns>
         /// <exception cref="ArgumentException">Thrown when source buffer is too small.</exception>
         public static int ReadGuidRfc4122(ReadOnlySpan<byte> source, out Guid value)
         {
-            if (source.Length < GuidSize)
-                throw new ArgumentException($"Buffer too small for Guid; need {GuidSize}, have {source.Length}.", nameof(source));
+            EnsureSize(GuidSize, source.Length, "Guid", nameof(source));
 
             Span<byte> tmp = stackalloc byte[GuidSize];
             // Reverse RFC 4122 -> .NET layout

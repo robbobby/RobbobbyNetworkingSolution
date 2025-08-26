@@ -224,6 +224,30 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(testValue, value);
         }
 
+        [Fact]
+        public void WriteSByte_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = Array.Empty<byte>();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => BinarySerializer.WriteSByte(buffer, (sbyte)-1));
+            Assert.Contains("Buffer too small for sbyte", ex.Message, StringComparison.Ordinal);
+            Assert.Equal("destination", ex.ParamName);
+        }
+
+        [Fact]
+        public void ReadSByte_BufferTooSmall_ThrowsArgumentException()
+        {
+            // Arrange
+            var buffer = Array.Empty<byte>();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => BinarySerializer.ReadSByte(buffer, out _));
+            Assert.Contains("Buffer too small for sbyte", ex.Message, StringComparison.Ordinal);
+            Assert.Equal("source", ex.ParamName);
+        }
+
         #endregion
 
         #region Int16 Tests
@@ -743,17 +767,20 @@ namespace Serializer.Runtime.Tests
             BinarySerializer.WriteGuid(standardBuffer, testGuid);
             BinarySerializer.WriteGuidRfc4122(rfc4122Buffer, testGuid);
 
-            // Assert - The byte orders should be different for the first 8 bytes
-            // (Data1, Data2, Data3 are reversed in RFC 4122)
-            Assert.NotEqual(standardBuffer[0], rfc4122Buffer[0]);
-            Assert.NotEqual(standardBuffer[1], rfc4122Buffer[1]);
-            Assert.NotEqual(standardBuffer[2], rfc4122Buffer[2]);
-            Assert.NotEqual(standardBuffer[3], rfc4122Buffer[3]);
-            Assert.NotEqual(standardBuffer[4], rfc4122Buffer[4]);
-            Assert.NotEqual(standardBuffer[5], rfc4122Buffer[5]);
-            Assert.NotEqual(standardBuffer[6], rfc4122Buffer[6]);
-            Assert.NotEqual(standardBuffer[7], rfc4122Buffer[7]);
-            // Last 8 bytes should be the same
+            // Assert - RFC 4122 bytes are the reversals of .NET layout for the first 4/2/2 segments
+            var first4 = standardBuffer.AsSpan(0, 4).ToArray();
+            Array.Reverse(first4);
+            Assert.Equal(first4, rfc4122Buffer.AsSpan(0, 4).ToArray());
+
+            var next2 = standardBuffer.AsSpan(4, 2).ToArray();
+            Array.Reverse(next2);
+            Assert.Equal(next2, rfc4122Buffer.AsSpan(4, 2).ToArray());
+
+            var next2b = standardBuffer.AsSpan(6, 2).ToArray();
+            Array.Reverse(next2b);
+            Assert.Equal(next2b, rfc4122Buffer.AsSpan(6, 2).ToArray());
+
+            // Last 8 bytes should be identical
             for (int i = 8; i < 16; i++)
             {
                 Assert.Equal(standardBuffer[i], rfc4122Buffer[i]);
@@ -782,6 +809,7 @@ namespace Serializer.Runtime.Tests
             Assert.Equal(4, BinarySerializer.WriteSingle(buffer, 3.14159f));
             Assert.Equal(8, BinarySerializer.WriteDouble(buffer, 3.141592653589793));
             Assert.Equal(16, BinarySerializer.WriteGuid(buffer, Guid.NewGuid()));
+            Assert.Equal(16, BinarySerializer.WriteGuidRfc4122(buffer, Guid.NewGuid()));
         }
 
         [Fact]

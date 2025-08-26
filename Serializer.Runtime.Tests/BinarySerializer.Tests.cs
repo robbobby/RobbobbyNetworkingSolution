@@ -1187,6 +1187,38 @@ namespace Serializer.Runtime.Tests
             Assert.Equal("value", exception.ParamName);
         }
 
+        [Fact]
+        public void WriteString_ReadString_RoundTrip_EmbeddedNull()
+        {
+            // Arrange: String with embedded NUL characters
+            var s = "a\0b\0c";
+            var buf = new byte[2 + Encoding.UTF8.GetByteCount(s)];
+
+            // Act - Write
+            var written = BinarySerializer.WriteString(buf, s);
+
+            // Act - Read
+            var read = BinarySerializer.ReadString(buf, out var back);
+
+            // Assert
+            Assert.Equal(written, read);
+            Assert.Equal(s, back);
+        }
+
+        [Fact]
+        public void GetStringSerializedSize_TooLongMultiByte_Throws()
+        {
+            // Arrange: Create a string with multi-byte characters that exceeds 65535 bytes
+            // Each emoji is 4 bytes in UTF-8, so we need > 16383 emojis to exceed the limit
+            var emoji = "😀"; // U+1F600, 4 bytes in UTF-8
+            var s = string.Join("", Enumerable.Repeat(emoji, 17000)); // 17000 * 4 = 68000 bytes > 65535
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => BinarySerializer.GetStringSerializedSize(s));
+            Assert.Contains("String too long", exception.Message, StringComparison.Ordinal);
+            Assert.Equal("value", exception.ParamName);
+        }
+
         #endregion
     }
 }

@@ -505,12 +505,15 @@ namespace Serializer.Runtime
         #region String
 
         /// <summary>
-        /// Writes a string value to the specified buffer with UTF-8 encoding and UInt16 length prefix.
+        /// Writes a string value with UTF-8 encoding and a UInt16 length prefix.
+        /// Null and empty are encoded identically as length 0 and will read back as string.Empty.
         /// </summary>
         /// <param name="destination">The destination buffer.</param>
-        /// <param name="value">The string value to write, or null.</param>
-        /// <returns>The number of bytes written (2 for length prefix + string bytes).</returns>
-        /// <exception cref="ArgumentException">Thrown when destination buffer is too small.</exception>
+        /// <param name="value">The string value to write, or null (encoded as length 0).</param>
+        /// <returns>The number of bytes written (2 for the length prefix + string bytes).</returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when the destination buffer is too small or when the string is too long to serialize.
+        /// </exception>
         public static int WriteString(Span<byte> destination, string? value)
         {
             if (value == null)

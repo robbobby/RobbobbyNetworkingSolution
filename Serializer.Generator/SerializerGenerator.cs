@@ -425,9 +425,6 @@ namespace Serializer.Generator
             var propertyType = property.Type;
             var (readMethod, expectedLength) = GetPrimitiveReadInfo(propertyType);
 
-            codeBuilder.AppendLine($"                            if (len != {expectedLength}) return false;");
-
-            // Use template for Int32 types
             if (propertyType.SpecialType == SpecialType.System_Int32)
             {
                 var templateCode = Int32Template.GenerateReadCode(propertyName, compilation);

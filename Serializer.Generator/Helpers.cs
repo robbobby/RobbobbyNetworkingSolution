@@ -13,34 +13,34 @@ public static class Helpers
     /// </summary>
     public static string ExtractMethodBody<T>(Compilation compilation, string methodName)
     {
-        if (compilation == null) 
+        if (compilation == null)
         {
             return string.Empty;
         }
 
         // Get the type symbol for the template class
         var templateType = compilation.GetTypeByMetadataName($"Serializer.Generator.Templates.{typeof(T).Name}");
-        if (templateType == null) 
+        if (templateType == null)
         {
             return string.Empty;
         }
 
         // Find the method by name
         var method = templateType.GetMembers(methodName).FirstOrDefault() as IMethodSymbol;
-        if (method == null) 
+        if (method == null)
         {
             return string.Empty;
         }
 
         // Get the syntax reference and extract the method body
         var syntaxReference = method.DeclaringSyntaxReferences.FirstOrDefault();
-        if (syntaxReference == null) 
+        if (syntaxReference == null)
         {
             return string.Empty;
         }
 
         var syntaxNode = syntaxReference.GetSyntax();
-        if (syntaxNode is not MethodDeclarationSyntax methodDeclaration) 
+        if (syntaxNode is not MethodDeclarationSyntax methodDeclaration)
         {
             return string.Empty;
         }
@@ -87,7 +87,7 @@ public static class Helpers
         {
             // If reflection fails, return empty string
         }
-        
+
         return string.Empty;
     }
 }

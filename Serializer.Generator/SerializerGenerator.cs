@@ -276,7 +276,6 @@ namespace Serializer.Generator
             {
                 // Fallback to original approach for other primitive types
                 var (writeMethod, length) = GetPrimitiveWriteInfo(propertyType);
-                codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort){length}); // Length");
                 codeBuilder.AppendLine($"                    used += RndCodec.{writeMethod}(buffer.Slice(used), {propertyName});");
             }
         }

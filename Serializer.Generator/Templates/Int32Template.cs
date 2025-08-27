@@ -9,8 +9,8 @@ namespace Serializer.Generator.Templates
     {
         public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, TestPacket testPacket)
         {
-            consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var HealthValue);
-            testPacket.Health = HealthValue;
+            consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
+            testPacket.PROPERTY_KEY = PROPERTY_VALUE;
         }
 
         public static void Write(ref int used, Span<byte> buffer, int value, ushort key)
@@ -26,8 +26,8 @@ namespace Serializer.Generator.Templates
         {
             var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Read));
             return methodBody
-                .Replace("HealthValue", $"{propertyName}Value")
-                .Replace("Health", propertyName);
+                .Replace("PROPERTY_VALUE", $"{propertyName}Value")
+                .Replace("PROPERTY_KEY", propertyName);
         }
 
 
@@ -43,6 +43,6 @@ namespace Serializer.Generator.Templates
 
     public class TestPacket
     {
-        public int Health { get; set; }
+        public int PROPERTY_KEY { get; set; }
     }
 }

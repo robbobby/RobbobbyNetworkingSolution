@@ -29,7 +29,7 @@ namespace Serializer.Generator.Templates
             // For now, we'll use a simpler approach with predefined templates
             var templateKey = $"{templateType.Name}.{methodName}";
             var template = GetTemplateString(templateKey);
-            
+
             if (string.IsNullOrEmpty(template))
             {
                 throw new ArgumentException($"Template not found for {templateKey}");
@@ -60,29 +60,29 @@ namespace Serializer.Generator.Templates
             {
                 "Int32Template.Read" => @"consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PropertyNameValue);
             readPacket.PropertyName = PropertyNameValue;",
-                
+
                 "Int32Template.Write" => @"if (!(value == 0))
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
                 used += RndCodec.WriteInt32(buffer.Slice(used), value);
             }",
-                
+
                 "StringTemplate.Read" => @"var PropertyNameStart = consumed;
             consumed += RndCodec.ReadString(buffer.Slice(consumed), out var PropertyNameValue);
             readPacket.PropertyName = PropertyNameValue;
             // Verify we didn't read beyond the expected length
             if (consumed - PropertyNameStart > len) return false;",
-                
+
                 "StringTemplate.Write" => @"var PropertyNameBytes = System.Text.Encoding.UTF8.GetByteCount(PropertyName);
             used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)(2 + PropertyNameBytes)); // Length (2 for string length + string bytes)
             used += RndCodec.WriteString(buffer.Slice(used), PropertyName);",
-                
+
                 "NestedObjectTemplate.Read" => @"if (TargetType.TryRead(buffer.Slice(consumed, len), ref consumed, out var PropertyNameValue))
             {
                 readPacket.PropertyName = PropertyNameValue;
             }
             consumed += len;",
-                
+
                 "NestedObjectTemplate.Write" => @"// Write nested object as length-prefixed payload
             var nestedBuffer = new byte[1024]; // Temporary buffer
             if (PropertyName!.Write(nestedBuffer, out var nestedLength))
@@ -91,7 +91,7 @@ namespace Serializer.Generator.Templates
                 nestedBuffer.AsSpan(0, nestedLength).CopyTo(buffer.Slice(used));
                 used += nestedLength;
             }",
-                
+
                 "ArrayTemplate.Read" => @"var arrayStart = consumed;
             consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var count);
             var PropertyNameList = new List<ElementType>();
@@ -105,7 +105,7 @@ namespace Serializer.Generator.Templates
                 consumed += itemLen;
             }
             readPacket.PropertyName = PropertyNameList.ToArray();",
-                
+
                 "ArrayTemplate.Write" => @"var PropertyNameTotalLength = 2; // Start with array count
             foreach (var item in PropertyName)
             {
@@ -127,7 +127,7 @@ namespace Serializer.Generator.Templates
                     used += itemLength;
                 }
             }",
-                
+
                 _ => string.Empty
             };
         }

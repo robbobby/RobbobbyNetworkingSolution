@@ -1,15 +1,31 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "🔍 Running pre-commit checks..."
 
 echo "📝 Formatting C# files..."
 # Safe whitespace across the whole repo (tests included, no analyzer code fixes):
-#dotnet format whitespace --no-restore --verbosity minimal || echo "⚠️  Formatting failed - continuing anyway"
-
-# Analyzer fixes only for non-test projects:
+#if ! dotnet format whitespace --no-restore --verbosity minimal; then
+#    echo "⚠️  Formatting failed"
+#    echo -n "Continue with commit anyway? (y/n): "
+#    read -r REPLY < /dev/tty
+#    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+#        echo "❌ Commit aborted"
+#        exit 1
+#    fi
+#fi
+#
+## Analyzer fixes only for non-test projects:
 #for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
-#  dotnet format analyzers "$p" --no-restore --verbosity minimal || echo "⚠️  Analyzer formatting for $p failed - continuing anyway"
+#  if ! dotnet format analyzers "$p" --no-restore --verbosity minimal; then
+#    echo "⚠️  Analyzer formatting for $p failed"
+#    echo -n "Continue with commit anyway? (y/n): "
+#    read -r REPLY < /dev/tty
+#    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+#        echo "❌ Commit aborted"
+#        exit 1
+#    fi
+#  fi
 #done
 
 # Ensure formatting changes are included in this commit
@@ -17,10 +33,26 @@ echo "📦 Staging formatting changes..."
 git add -u
 
 echo "🔨 Building solution..."
-dotnet build || echo "⚠️  Build failed - continuing anyway"
+if ! dotnet build; then
+    echo "⚠️  Build failed"
+    echo -n "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+fi
 
 # Run unit tests
 echo "🧪 Running unit tests..."
-dotnet test --filter "Category=Unit" --verbosity minimal || echo "⚠️  Unit tests failed - continuing anyway"
+if ! dotnet test --filter "Category=Unit" --verbosity minimal; then
+    echo "⚠️  Unit tests failed"
+    echo -n "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+fi
 
 echo "✅ Pre-commit checks completed - proceeding with commit"

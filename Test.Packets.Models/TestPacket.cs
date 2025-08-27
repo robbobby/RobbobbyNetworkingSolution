@@ -16,7 +16,7 @@ namespace Test.Packets.Models
         public TestFieldPacket? FieldPacket { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Test packet for generator")]
         public TestFieldPacket[] FieldPacketList { get; set; } = Array.Empty<TestFieldPacket>();
-        
+
         // Additional properties for all template types
         public byte ByteValue { get; set; }
         public sbyte SByteValue { get; set; }

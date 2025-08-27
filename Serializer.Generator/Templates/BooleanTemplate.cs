@@ -10,7 +10,7 @@ namespace Serializer.Generator.Templates
         public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME)
         {
             consumed += RndCodec.ReadBooleanStrict(buffer.Slice(consumed), out var PROPERTY_VALUE);
-            PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE;
+            PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE; // This gets replaced during code generation
         }
 
         public static void Write(ref int used, Span<byte> buffer, bool PROPERTY_VALUE, ushort key)

@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serializer.Generator.Templates
 {
-    public static class ArrayTemplate
+    public class ArrayTemplate
     {
-        public static void Read<T>(ref int consumed, ReadOnlySpan<byte> buffer, out T[] readPacket) where T : IRnsPacketField
+        public static void Read<T>(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME) where T : IRnsPacketField
         {
             consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var ArrayFieldTotalLen);
             consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var count);
@@ -21,17 +24,17 @@ namespace Serializer.Generator.Templates
                 consumed += itemLen;
             }
 
-            readPacket = ArrayFieldList.ToArray();
+            PACKET_NAME.PROPERTY_KEY = ArrayFieldList.ToArray(); // This gets replaced during code generation
         }
 
-        public static void Write<T>(ref int used, Span<byte> buffer, T[] writePacket, ushort key) where T : IRnsPacketField
+        public static void Write<T>(ref int used, Span<byte> buffer, T[] value, ushort key) where T : IRnsPacketField
         {
-            if (writePacket != null && writePacket.Length > 0)
+            if (value != null && value.Length > 0)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
 
                 var ArrayFieldTotalLength = 2;
-                foreach (var item in writePacket)
+                foreach (var item in value)
                 {
                     var itemBuffer = new byte[1024];
                     if (item.Write(itemBuffer, out int itemLength))
@@ -41,9 +44,9 @@ namespace Serializer.Generator.Templates
                 }
 
                 used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)ArrayFieldTotalLength);
-                used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)writePacket.Length);
+                used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)value.Length);
 
-                foreach (var item in writePacket)
+                foreach (var item in value)
                 {
                     var itemBuffer = new byte[1024];
                     if (item.Write(itemBuffer, out int itemLength))
@@ -54,6 +57,38 @@ namespace Serializer.Generator.Templates
                     }
                 }
             }
+        }
+
+        public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
+        {
+            // Try Roslyn analysis first
+            var methodBody = Helpers.ExtractMethodBody<ArrayTemplate>(compilation, nameof(Read));
+
+            // If that fails, use the fallback approach
+            if (string.IsNullOrEmpty(methodBody))
+            {
+                methodBody = Helpers.ExtractMethodBodyFromSource<ArrayTemplate>(nameof(Read));
+            }
+
+            return methodBody
+                .Replace("PROPERTY_KEY", propertyName)
+                .Replace("PACKET_NAME", packetName);
+        }
+
+        public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
+        {
+            // Try Roslyn analysis first
+            var methodBody = Helpers.ExtractMethodBody<ArrayTemplate>(compilation, nameof(Write));
+
+            // If that fails, use the fallback approach
+            if (string.IsNullOrEmpty(methodBody))
+            {
+                methodBody = Helpers.ExtractMethodBodyFromSource<ArrayTemplate>(nameof(Write));
+            }
+
+            return methodBody
+                .Replace("value", propertyName)
+                .Replace("key", $"Keys.{propertyName}");
         }
     }
 

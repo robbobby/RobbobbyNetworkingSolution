@@ -21,6 +21,6 @@ namespace Serializer.Generator
     public interface IRnsPacketField
     {
         bool Write(byte[] buffer, out int bytesWritten);
-        static abstract bool TryRead<T>(ReadOnlySpan<byte> buffer, ref int consumed, out T readPacket);
+        // static abstract bool TryRead<T>(ReadOnlySpan<byte> buffer, ref int consumed, out T readPacket);
     }
 }

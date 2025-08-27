@@ -1,3 +1,4 @@
+using Test.Packets.Models;
 using Xunit;
 
 namespace Serializer.Generator.Tests

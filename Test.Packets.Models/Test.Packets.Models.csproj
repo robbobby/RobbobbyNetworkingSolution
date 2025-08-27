@@ -1,23 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <OutputType>Exe</OutputType>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1303;CA1515</WarningsNotAsErrors>
-    <MSBuildTreatWarningsAsErrors>false</MSBuildTreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj"/>
     <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj"/>
     <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="obj\**\*.cs" />
-    <Compile Remove="$(BaseIntermediateOutputPath)**\*.cs" />
   </ItemGroup>
 </Project>

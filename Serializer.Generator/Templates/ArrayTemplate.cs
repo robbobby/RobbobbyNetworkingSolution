@@ -14,7 +14,7 @@ namespace Serializer.Generator.Templates
             for (int i = 0; i < count; i++)
             {
                 consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var itemLen);
-                if (T.TryRead<T>(buffer.Slice(consumed, itemLen), ref consumed, out var item))
+                if (PlaceHolderReadable.TryRead<T>(buffer.Slice(consumed, itemLen), ref consumed, out var item))
                 {
                     ArrayFieldList.Add(item);
                 }
@@ -54,6 +54,15 @@ namespace Serializer.Generator.Templates
                     }
                 }
             }
+        }
+    }
+
+    public static class PlaceHolderReadable
+    {
+        public static bool TryRead<T>(ReadOnlySpan<byte> buffer, ref int consumed, out T readPacket) where T : IRnsPacketField
+        {
+            readPacket = Activator.CreateInstance<T>();
+            return true;
         }
     }
 }

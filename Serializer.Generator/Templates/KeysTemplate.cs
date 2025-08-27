@@ -1,5 +1,3 @@
-using System;
-
 namespace Serializer.Generator.Templates
 {
     public static class KeysTemplate

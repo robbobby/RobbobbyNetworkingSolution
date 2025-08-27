@@ -1,6 +1,6 @@
 using Serializer.Abstractions;
 
-namespace Serializer.Generator.Tests
+namespace Test.Packets.Models
 {
     /// <summary>
     /// Test packet for testing the source generator - following problem statement specification

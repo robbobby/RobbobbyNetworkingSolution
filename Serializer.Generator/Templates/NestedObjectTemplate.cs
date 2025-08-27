@@ -7,7 +7,7 @@ namespace Serializer.Generator.Templates
         public static void Read<T>(ref int consumed, ReadOnlySpan<byte> buffer, out T readPacket) where T : IRnsPacketField
         {
             consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var NestedFieldLen);
-            if (T.TryRead<T>(buffer.Slice(consumed, NestedFieldLen), ref consumed, out var NestedFieldValue))
+            if (PlaceHolderReadable.TryRead<T>(buffer.Slice(consumed, NestedFieldLen), ref consumed, out var NestedFieldValue))
             {
                 readPacket = NestedFieldValue;
             }

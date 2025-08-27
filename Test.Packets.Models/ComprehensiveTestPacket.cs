@@ -1,6 +1,6 @@
 using Serializer.Abstractions;
 
-namespace Serializer.Generator.Tests
+namespace Test.Packets.Models
 {
     /// <summary>
     /// Comprehensive test packet that includes ALL data types the generator can handle

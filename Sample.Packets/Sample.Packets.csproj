@@ -1,20 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
-        <OutputType>Exe</OutputType>
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-        <WarningsAsErrors />
-        <WarningsNotAsErrors>CA1303;CA1515</WarningsNotAsErrors>
-        <MSBuildTreatWarningsAsErrors>false</MSBuildTreatWarningsAsErrors>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj" />
-        <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj" />
-        <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <OutputType>Exe</OutputType>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors/>
+    <WarningsNotAsErrors>CA1303;CA1515</WarningsNotAsErrors>
+    <MSBuildTreatWarningsAsErrors>false</MSBuildTreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj"/>
+    <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj"/>
+    <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="obj\" />
+  </ItemGroup>
 </Project>

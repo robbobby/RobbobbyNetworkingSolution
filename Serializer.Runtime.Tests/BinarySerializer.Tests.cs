@@ -1,8 +1,6 @@
-using System;
 using System.Buffers.Binary;
 using System.Text;
 using Xunit;
-using Serializer.Runtime;
 
 namespace Serializer.Runtime.Tests
 {

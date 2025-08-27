@@ -1,4 +1,6 @@
-namespace Serializer.Abstractions
+using System;
+
+namespace Serializer.Generator
 {
     /// <summary>
     /// Generic interface for network packets with a strongly-typed identifier.
@@ -14,9 +16,11 @@ namespace Serializer.Abstractions
         TId Id { get; }
     }
 
-    /// <summary>
-    /// Generic interface for network serialzable fields within a packet.
-    /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This is intentionally a marker interface for packet field identification")]
-    public interface IRnsPacketField { }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces",
+        Justification = "This is intentionally a marker interface for packet field identification")]
+    public interface IRnsPacketField
+    {
+        bool Write(byte[] buffer, out int bytesWritten);
+        static abstract bool TryRead<T>(ReadOnlySpan<byte> buffer, ref int consumed, out T readPacket);
+    }
 }

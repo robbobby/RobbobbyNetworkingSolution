@@ -401,7 +401,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.PlayerName, readPacket.PlayerName);
             Assert.Equal(originalPacket.X, readPacket.X);
@@ -431,7 +431,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.PlayerName, readPacket.PlayerName);
             Assert.Equal(originalPacket.X, readPacket.X);
@@ -572,7 +572,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.Type, readPacket.Type);
             Assert.Equal(originalPacket.UserStatus, readPacket.UserStatus);
@@ -600,7 +600,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.Type, readPacket.Type);
             Assert.Equal(originalPacket.UserStatus, readPacket.UserStatus);
@@ -665,7 +665,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.ByteValue, readPacket.ByteValue);
             Assert.Equal(originalPacket.SByteValue, readPacket.SByteValue);
@@ -694,7 +694,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             // Verify all properties are default values
             Assert.Equal(0, readPacket.Id);
             Assert.Equal(0, readPacket.ByteValue);
@@ -766,7 +766,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.MaxInt, readPacket.MaxInt);
             Assert.Equal(originalPacket.MinInt, readPacket.MinInt);
@@ -847,7 +847,7 @@ namespace Serializer.Generator.Tests
 
             // Assert
             Assert.True(success);
-            Assert.Equal(bytesWritten, bytesRead);
+            Assert.Equal(bytesWritten, consumed);
             Assert.Equal(originalPacket.Id, readPacket.Id);
             Assert.Equal(originalPacket.NullableString, readPacket.NullableString);
             Assert.Equal(originalPacket.NonNullableString, readPacket.NonNullableString);

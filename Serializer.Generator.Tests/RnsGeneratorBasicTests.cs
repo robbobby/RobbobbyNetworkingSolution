@@ -1,6 +1,4 @@
-using System;
 using Xunit;
-using Serializer.Generator.Tests;
 
 namespace Serializer.Generator.Tests
 {
@@ -49,9 +47,9 @@ namespace Serializer.Generator.Tests
             // Test that default values are omitted entirely
             var packet = new TestPacket();
             var buffer = new byte[1024];
-            
+
             bool success = packet.Write(buffer, out var bytesWritten);
-            
+
             Assert.True(success);
             Assert.Equal(0, bytesWritten);
         }
@@ -68,20 +66,21 @@ namespace Serializer.Generator.Tests
                 IsAlive = true
                 // Y remains default (0f)
             };
-            
+
             var writeBuffer = new byte[1024];
             bool writeSuccess = original.Write(writeBuffer, out var bytesWritten);
             Assert.True(writeSuccess);
             Assert.True(bytesWritten > 0);
-            
+
             // Verify that we wrote some data
             Console.WriteLine($"Serialized {bytesWritten} bytes");
-            
+
             // Deserialize
-            bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), out var deserialized, out var bytesRead);
+            int consumed = 0;
+            bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), ref consumed, out var deserialized);
             Assert.True(readSuccess);
-            Assert.Equal(bytesWritten, bytesRead);
-            
+            Assert.Equal(bytesWritten, consumed);
+
             // Verify values
             Assert.Equal(original.PlayerName, deserialized.PlayerName);
             Assert.Equal(original.X, deserialized.X);
@@ -104,16 +103,17 @@ namespace Serializer.Generator.Tests
                     Health = 50
                 }
             };
-            
+
             var writeBuffer = new byte[1024];
             bool writeSuccess = original.Write(writeBuffer, out var bytesWritten);
             Assert.True(writeSuccess);
             Assert.True(bytesWritten > 0);
-            
-            bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), out var deserialized, out var bytesRead);
+
+            int consumed = 0;
+            bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), ref consumed, out var deserialized);
             Assert.True(readSuccess);
-            Assert.Equal(bytesWritten, bytesRead);
-            
+            Assert.Equal(bytesWritten, consumed);
+
             Assert.Equal(original.PlayerName, deserialized.PlayerName);
             Assert.NotNull(deserialized.FieldPacket);
             Assert.Equal(original.FieldPacket.PlayerName, deserialized.FieldPacket.PlayerName);
@@ -134,23 +134,24 @@ namespace Serializer.Generator.Tests
                     new TestFieldPacket { PlayerName = "Item2", Health = 20 }
                 }
             };
-            
+
             var writeBuffer = new byte[1024];
             bool writeSuccess = original.Write(writeBuffer, out var bytesWritten);
             Assert.True(writeSuccess);
             Assert.True(bytesWritten > 0);
-            
-            bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), out var deserialized, out var bytesRead);
+
+            int consumed = 0;
+            bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), ref consumed, out var deserialized);
             Assert.True(readSuccess);
-            Assert.Equal(bytesWritten, bytesRead);
-            
+            Assert.Equal(bytesWritten, consumed);
+
             Assert.Equal(original.PlayerName, deserialized.PlayerName);
             Assert.NotNull(deserialized.FieldPacketList);
             Assert.Equal(2, deserialized.FieldPacketList.Length);
-            
+
             Assert.Equal("Item1", deserialized.FieldPacketList[0].PlayerName);
             Assert.Equal(10, deserialized.FieldPacketList[0].Health);
-            
+
             Assert.Equal("Item2", deserialized.FieldPacketList[1].PlayerName);
             Assert.Equal(20, deserialized.FieldPacketList[1].Health);
         }

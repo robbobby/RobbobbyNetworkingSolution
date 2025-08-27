@@ -1,5 +1,4 @@
 using Xunit;
-using Serializer.Abstractions;
 
 namespace Serializer.Abstractions.Tests
 {

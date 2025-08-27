@@ -11,7 +11,7 @@ namespace Serializer.Abstractions.Tests
             var packet = new TestPacketWithIntId();
 
             // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
             Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
             Assert.Equal(42, packet.Id);
         }
@@ -23,7 +23,7 @@ namespace Serializer.Abstractions.Tests
             var packet = new TestPacketWithByteId();
 
             // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<byte>>(packet);
             Assert.IsAssignableFrom<IRnsPacket<byte>>(packet);
             Assert.IsType<byte>(packet.Id);
             Assert.Equal((byte)255, packet.Id);
@@ -37,7 +37,7 @@ namespace Serializer.Abstractions.Tests
             var packet = new TestPacketWithGuidId(expectedId);
 
             // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<Guid>>(packet);
             Assert.IsAssignableFrom<IRnsPacket<Guid>>(packet);
             Assert.Equal(expectedId, packet.Id);
         }
@@ -49,7 +49,7 @@ namespace Serializer.Abstractions.Tests
             var packet = new TestPacketWithShortId();
 
             // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<short>>(packet);
             Assert.IsAssignableFrom<IRnsPacket<short>>(packet);
             Assert.IsType<short>(packet.Id);
             Assert.Equal((short)12345, packet.Id);
@@ -63,7 +63,7 @@ namespace Serializer.Abstractions.Tests
 
             // Assert
             // This test verifies that IRnsPacket<TId> properly extends IRnsPacket
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
             Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
         }
 

@@ -1,15 +1,22 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Serializer.Abstractions
 {
     /// <summary>
-    /// Marker interface that identifies a type as a network packet.
-    /// All packet types should implement this interface.
-    /// See also <see cref="IRnsPacket{TId}"/> for a strongly-typed packet identifier.
+    /// Generic interface for network packets with a strongly-typed identifier.
     /// </summary>
-    [SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This is intentionally a marker interface for packet identification")]
-    public interface IRnsPacket
+    /// <typeparam name="TId">The type of the packet identifier.</typeparam>
+    public interface IRnsPacket<TId> : IRnsPacketField where TId : notnull
     {
-        // Marker interface - no members required
+        /// <summary>
+        /// Gets the protocol identifier for this packet. Implementations may return a
+        /// type-level constant (e.g., an opcode) or an instance-specific value, depending
+        /// on the protocol's design.
+        /// </summary>
+        TId Id { get; }
     }
+
+    /// <summary>
+    /// Generic interface for network serialzable fields within a packet.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1040:Avoid empty interfaces", Justification = "This is intentionally a marker interface for packet field identification")]
+    public interface IRnsPacketField { }
 }

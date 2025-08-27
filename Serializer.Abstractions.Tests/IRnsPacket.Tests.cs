@@ -16,24 +16,30 @@ namespace Serializer.Abstractions.Tests
         public void IRnsPacketIsAssignable(object packet)
         {
             // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
         }
 
         #region Test Implementations
 
         // Basic IRnsPacket implementations
-        private sealed class TestPacket : IRnsPacket
+        private sealed class TestPacket : IRnsPacket<int>
         {
+            // Marker interface implementation - no members required
+            public int Id { get; } = 1;
+        }
+
+        private struct TestPacketStruct : IRnsPacket<int>
+        {
+            public TestPacketStruct()
+            { }
+
+            public int Id { get; } = 2;
             // Marker interface implementation - no members required
         }
 
-        private struct TestPacketStruct : IRnsPacket
+        private sealed class TestSealedPacket : IRnsPacket<int>
         {
-            // Marker interface implementation - no members required
-        }
-
-        private sealed class TestSealedPacket : IRnsPacket
-        {
+            public int Id { get; } = 3;
             // Sealed class implementation - no members required
         }
 

@@ -11,7 +11,7 @@ namespace Serializer.Abstractions.Tests
             var packet = new TestFullPacket();
 
             // Assert
-            Assert.IsAssignableFrom<IRnsPacket>(packet);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
             Assert.IsAssignableFrom<IRnsPacket<int>>(packet);
             Assert.IsAssignableFrom<IRnsBinaryWritable>(packet);
             Assert.Equal(123, packet.Id);

@@ -46,7 +46,7 @@ namespace Serializer.Abstractions.Tests
             // Assert
             Assert.Single(attributes);
             Assert.IsType<RnsSerializableAttribute>(attributes[0]);
-            Assert.IsAssignableFrom<IRnsPacket>(new TestSerializablePacket());
+            Assert.IsAssignableFrom<IRnsPacket<int>>(new TestSerializablePacket());
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace Serializer.Abstractions.Tests
             Assert.Single(attributes);
             Assert.IsType<RnsSerializableAttribute>(attributes[0]);
             var instance = new TestFullPacket();
-            Assert.IsAssignableFrom<IRnsPacket>(instance);
+            Assert.IsAssignableFrom<IRnsPacket<int>>(instance);
             Assert.IsAssignableFrom<IRnsPacket<int>>(instance);
             Assert.IsAssignableFrom<IRnsBinaryWritable>(instance);
         }
@@ -97,9 +97,10 @@ namespace Serializer.Abstractions.Tests
         }
 
         [RnsSerializable]
-        private sealed class TestSerializablePacket : IRnsPacket
+        private sealed class TestSerializablePacket : IRnsPacket<int>
         {
             // Test class with attribute implementing IRnsPacket
+            public int Id { get; } = 1;
         }
 
         [RnsSerializable]

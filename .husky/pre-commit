@@ -5,24 +5,22 @@ echo "🔍 Running pre-commit checks..."
 
 echo "📝 Formatting C# files..."
 # Safe whitespace across the whole repo (tests included, no analyzer code fixes):
-dotnet format whitespace --no-restore --verbosity minimal || echo "⚠️  Formatting failed - continuing anyway"
+#dotnet format whitespace --no-restore --verbosity minimal || echo "⚠️  Formatting failed - continuing anyway"
 
 # Analyzer fixes only for non-test projects:
-for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
-  dotnet format analyzers "$p" --no-restore --verbosity minimal || echo "⚠️  Analyzer formatting for $p failed - continuing anyway"
-done
+#for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
+#  dotnet format analyzers "$p" --no-restore --verbosity minimal || echo "⚠️  Analyzer formatting for $p failed - continuing anyway"
+#done
 
 # Ensure formatting changes are included in this commit
 echo "📦 Staging formatting changes..."
 git add -u
 
 echo "🔨 Building solution..."
-echo "Running build (will show errors but continue)..."
 dotnet build || echo "⚠️  Build failed - continuing anyway"
 
 # Run unit tests
 echo "🧪 Running unit tests..."
-echo "Running tests (will show errors but continue)..."
 dotnet test --filter "Category=Unit" --verbosity minimal || echo "⚠️  Unit tests failed - continuing anyway"
 
 echo "✅ Pre-commit checks completed - proceeding with commit"

@@ -39,12 +39,6 @@ namespace Serializer.Generator.Templates.ComplexTypes
             // Try Roslyn analysis first
             var methodBody = Helpers.ExtractMethodBody<NestedObjectTemplate>(compilation, nameof(Read));
 
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<NestedObjectTemplate>(nameof(Read));
-            }
-
             return methodBody
                 .Replace("PROPERTY_KEY", propertyName)
                 .Replace("PACKET_NAME", packetName);
@@ -54,12 +48,6 @@ namespace Serializer.Generator.Templates.ComplexTypes
         {
             // Try Roslyn analysis first
             var methodBody = Helpers.ExtractMethodBody<NestedObjectTemplate>(compilation, nameof(Write));
-
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<NestedObjectTemplate>(nameof(Write));
-            }
 
             return methodBody
                 .Replace("PROPERTY_VALUE", propertyName)

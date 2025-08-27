@@ -1,6 +1,5 @@
 using System;
 using Microsoft.CodeAnalysis;
-
 namespace Serializer.Generator.Templates.PrimitiveTypes
 {
     public class Int32Template
@@ -10,7 +9,6 @@ namespace Serializer.Generator.Templates.PrimitiveTypes
             consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
             PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE; // This gets replaced during code generation
         }
-
         public static void Write(ref int used, Span<byte> buffer, int PROPERTY_VALUE, ushort key)
         {
             if (PROPERTY_VALUE != 0)
@@ -19,35 +17,19 @@ namespace Serializer.Generator.Templates.PrimitiveTypes
                 used += RndCodec.WriteInt32(buffer.Slice(used), PROPERTY_VALUE);
             }
         }
-
         public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
         {
-            // Try Roslyn analysis first
+            // Use Roslyn analysis to extract the method body
             var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Read));
-
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Read));
-            }
-
             return methodBody
                 .Replace("PROPERTY_VALUE", $"{propertyName}Value")
                 .Replace("PROPERTY_KEY", propertyName)
                 .Replace("PACKET_NAME", packetName);
         }
-
         public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
         {
-            // Try Roslyn analysis first
+            // Use Roslyn analysis to extract the method body
             var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Write));
-
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Write));
-            }
-
             return methodBody
                 .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");

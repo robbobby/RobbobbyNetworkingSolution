@@ -59,15 +59,8 @@ namespace Serializer.Generator.Templates.ComplexTypes
 
         public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
         {
-            // Try Roslyn analysis first
+            // Use Roslyn analysis to extract the method body
             var methodBody = Helpers.ExtractMethodBody<ArrayTemplate>(compilation, nameof(Read));
-
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<ArrayTemplate>(nameof(Read));
-            }
-
             return methodBody
                 .Replace("PROPERTY_KEY", propertyName)
                 .Replace("PACKET_NAME", packetName);
@@ -75,14 +68,8 @@ namespace Serializer.Generator.Templates.ComplexTypes
 
         public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
         {
-            // Try Roslyn analysis first
+            // Use Roslyn analysis to extract the method body
             var methodBody = Helpers.ExtractMethodBody<ArrayTemplate>(compilation, nameof(Write));
-
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<ArrayTemplate>(nameof(Write));
-            }
 
             return methodBody
                 .Replace("PROPERTY_VALUE", propertyName)

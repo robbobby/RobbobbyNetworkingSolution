@@ -107,35 +107,40 @@ namespace Serializer.Generator
             var typeName = typeSymbol.Name;
 
             // Add file header
-            codeBuilder.Append(CodeGenerationTemplate.FileHeader);
+            codeBuilder.Append(FileHeaderTemplate.GenerateFileHeader());
 
             // Start namespace
             if (!string.IsNullOrEmpty(namespaceName))
             {
-                codeBuilder.AppendFormat(CodeGenerationTemplate.NamespaceStart, namespaceName);
+                codeBuilder.Append(NamespaceTemplate.GenerateNamespaceStart(namespaceName!));
             }
 
             // Generate partial class
-            codeBuilder.AppendFormat(CodeGenerationTemplate.ClassStart, typeName);
+            // TODO: Implement ClassStructureTemplate (Task 11B)
+            // CodeGenerationTemplate.GenerateClassStart(context, codeBuilder, typeName);
 
             // Get serializable properties (exclude Id property)
             var properties = GetSerializableProperties(typeSymbol, isTopLevel);
 
             // Generate Keys class
-            GenerateKeysClass(codeBuilder, properties);
+            // TODO: Implement ClassStructureTemplate (Task 11B)
+            // GenerateKeysClass(context, codeBuilder, properties);
 
             // Generate Write method
-            GenerateWriteMethod(codeBuilder, properties, semanticModel.Compilation);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // GenerateWriteMethod(context, codeBuilder, properties, semanticModel.Compilation);
 
             // Generate TryRead method
-            GenerateTryReadMethod(codeBuilder, typeName, properties, semanticModel.Compilation);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // GenerateTryReadMethod(context, codeBuilder, typeName, properties, semanticModel.Compilation);
 
-            codeBuilder.Append(CodeGenerationTemplate.ClassEnd);
+            // TODO: Implement ClassStructureTemplate (Task 11B)
+            // CodeGenerationTemplate.GenerateClassEnd(context, codeBuilder);
 
             // Close namespace
             if (!string.IsNullOrEmpty(namespaceName))
             {
-                codeBuilder.Append(CodeGenerationTemplate.NamespaceEnd);
+                codeBuilder.Append(NamespaceTemplate.GenerateNamespaceEnd());
             }
 
             return codeBuilder.ToString();
@@ -160,8 +165,9 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates the nested static Keys class
         /// </summary>
-        private static void GenerateKeysClass(StringBuilder codeBuilder, List<IPropertySymbol> properties)
+        private static void GenerateKeysClass(GeneratorExecutionContext context, StringBuilder codeBuilder, List<IPropertySymbol> properties)
         {
+            // TODO: Implement ClassStructureTemplate (Task 11B)
             var keysContent = new StringBuilder();
             ushort keyValue = 1;
             foreach (var property in properties)
@@ -170,40 +176,45 @@ namespace Serializer.Generator
                 keyValue++;
             }
 
-            codeBuilder.AppendFormat(CodeGenerationTemplate.KeysClass, keysContent.ToString());
+            // TODO: Implement ClassStructureTemplate (Task 11B)
+            // CodeGenerationTemplate.GenerateKeysClass(context, codeBuilder, keysContent.ToString());
         }
 
         /// <summary>
         /// Generates the Write method with specific wire format
         /// </summary>
-        private static void GenerateWriteMethod(StringBuilder codeBuilder, List<IPropertySymbol> properties, Compilation compilation)
+        private static void GenerateWriteMethod(GeneratorExecutionContext context, StringBuilder codeBuilder, List<IPropertySymbol> properties, Compilation compilation)
         {
-            codeBuilder.Append(CodeGenerationTemplate.WriteMethodStart);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GenerateWriteMethodStart(context, codeBuilder);
 
             foreach (var property in properties)
             {
-                GenerateWritePropertyCode(codeBuilder, property, compilation);
+                GenerateWritePropertyCode(context, codeBuilder, property, compilation);
             }
 
-            codeBuilder.Append(CodeGenerationTemplate.WriteMethodEnd);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GenerateWriteMethodEnd(context, codeBuilder);
         }
 
         /// <summary>
         /// Generates write code for a single property
         /// </summary>
-        private static void GenerateWritePropertyCode(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
+        private static void GenerateWritePropertyCode(GeneratorExecutionContext context, StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
         {
             var propertyName = property.Name;
             var propertyType = property.Type;
 
             // Check if property should be omitted
             string defaultCheck = GetDefaultValueCheck(propertyType, propertyName);
-            
+
             // Start property write block
-            codeBuilder.AppendFormat(CodeGenerationTemplate.PropertyWriteStart, propertyName, defaultCheck);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GeneratePropertyWriteStart(context, codeBuilder, propertyName, defaultCheck);
 
             // Write Key (UInt16)
-            codeBuilder.AppendFormat(CodeGenerationTemplate.PropertyKeyWrite, propertyName);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GeneratePropertyKeyWrite(context, codeBuilder, propertyName);
 
             // Write Value with specific encoding based on type
             if (IsSupportedPrimitiveType(propertyType))
@@ -217,14 +228,15 @@ namespace Serializer.Generator
             }
             else if (IsIRnsPacketField(propertyType))
             {
-                GenerateWriteNestedValue(codeBuilder, propertyName);
+                GenerateWriteNestedValue(context, codeBuilder, propertyName);
             }
             else if (IsArrayOfIRnsPacketField(propertyType))
             {
-                GenerateWriteArrayValue(codeBuilder, propertyName);
+                GenerateWriteArrayValue(context, codeBuilder, propertyName);
             }
 
-            codeBuilder.Append(CodeGenerationTemplate.PropertyWriteEnd);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GeneratePropertyWriteEnd(context, codeBuilder);
         }
 
         /// <summary>
@@ -320,59 +332,66 @@ namespace Serializer.Generator
             {
                 // Fallback to original approach for unsupported types
                 var (writeMethod, length) = GetPrimitiveWriteInfo(propertyType);
-                codeBuilder.AppendFormat(CodeGenerationTemplate.FallbackPrimitiveWrite, writeMethod, propertyName);
+                // TODO: Implement WriteMethodTemplate (Task 11C)
+                // CodeGenerationTemplate.GenerateFallbackPrimitiveWrite(context, codeBuilder, writeMethod, propertyName);
             }
         }
 
         /// <summary>
         /// Generates code to write a string value
         /// </summary>
-        private static void GenerateWriteStringValue(StringBuilder codeBuilder, string propertyName)
+        private static void GenerateWriteStringValue(GeneratorExecutionContext context, StringBuilder codeBuilder, string propertyName)
         {
-            codeBuilder.AppendFormat(CodeGenerationTemplate.StringWrite, propertyName);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GenerateStringWrite(context, codeBuilder, propertyName);
         }
 
         /// <summary>
         /// Generates code to write a nested IRnsPacketField value
         /// </summary>
-        private static void GenerateWriteNestedValue(StringBuilder codeBuilder, string propertyName)
+        private static void GenerateWriteNestedValue(GeneratorExecutionContext context, StringBuilder codeBuilder, string propertyName)
         {
-            codeBuilder.AppendFormat(CodeGenerationTemplate.NestedObjectWrite, propertyName);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GenerateNestedObjectWrite(context, codeBuilder, propertyName);
         }
 
         /// <summary>
-        /// Generates code to write an array of IRnsPacketField values
+        /// Generates code to write an array of IRnsPacketField value
         /// </summary>
-        private static void GenerateWriteArrayValue(StringBuilder codeBuilder, string propertyName)
+        private static void GenerateWriteArrayValue(GeneratorExecutionContext context, StringBuilder codeBuilder, string propertyName)
         {
-            codeBuilder.AppendFormat(CodeGenerationTemplate.ArrayWrite, propertyName);
+            // TODO: Implement WriteMethodTemplate (Task 11C)
+            // CodeGenerationTemplate.GenerateArrayWrite(context, codeBuilder, propertyName);
         }
 
         /// <summary>
         /// Generates the TryRead method with specific wire format handling
         /// </summary>
-        private static void GenerateTryReadMethod(StringBuilder codeBuilder, string typeName, List<IPropertySymbol> properties, Compilation compilation)
+        private static void GenerateTryReadMethod(GeneratorExecutionContext context, StringBuilder codeBuilder, string typeName, List<IPropertySymbol> properties, Compilation compilation)
         {
-            codeBuilder.AppendFormat(CodeGenerationTemplate.TryReadMethodStart, typeName);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // CodeGenerationTemplate.GenerateTryReadMethodStart(context, codeBuilder, typeName);
 
             // Generate switch cases for known keys
             foreach (var property in properties)
             {
-                GenerateReadPropertyCase(codeBuilder, property, compilation);
+                GenerateReadPropertyCase(context, codeBuilder, property, compilation);
             }
 
-            codeBuilder.Append(CodeGenerationTemplate.TryReadMethodEnd);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // CodeGenerationTemplate.GenerateTryReadMethodEnd(context, codeBuilder);
         }
 
         /// <summary>
         /// Generates a switch case for reading a property
         /// </summary>
-        private static void GenerateReadPropertyCase(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
+        private static void GenerateReadPropertyCase(GeneratorExecutionContext context, StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
         {
             var propertyName = property.Name;
             var propertyType = property.Type;
 
-            codeBuilder.AppendFormat(CodeGenerationTemplate.PropertyReadCaseStart, propertyName);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // CodeGenerationTemplate.GeneratePropertyReadCaseStart(context, codeBuilder, propertyName);
 
             if (IsSupportedPrimitiveType(propertyType))
             {
@@ -380,7 +399,7 @@ namespace Serializer.Generator
             }
             else if (propertyType.SpecialType == SpecialType.System_String)
             {
-                GenerateReadStringCase(codeBuilder, propertyName);
+                GenerateReadStringCase(context, codeBuilder, propertyName);
             }
             else if (IsIRnsPacketField(propertyType))
             {
@@ -391,7 +410,8 @@ namespace Serializer.Generator
                 GenerateReadArrayCase(codeBuilder, property);
             }
 
-            codeBuilder.Append(CodeGenerationTemplate.PropertyReadCaseEnd);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // CodeGenerationTemplate.GeneratePropertyReadCaseEnd(context, codeBuilder);
         }
 
         /// <summary>
@@ -472,16 +492,18 @@ namespace Serializer.Generator
             else
             {
                 // Fallback to original approach for other primitive types
-                codeBuilder.AppendFormat(CodeGenerationTemplate.FallbackPrimitiveRead, readMethod, propertyName);
+                // TODO: Implement ReadMethodTemplate (Task 11D)
+                // CodeGenerationTemplate.GenerateFallbackPrimitiveRead(context, codeBuilder, readMethod, propertyName);
             }
         }
 
         /// <summary>
         /// Generates read case for string
         /// </summary>
-        private static void GenerateReadStringCase(StringBuilder codeBuilder, string propertyName)
+        private static void GenerateReadStringCase(GeneratorExecutionContext context, StringBuilder codeBuilder, string propertyName)
         {
-            codeBuilder.AppendFormat(CodeGenerationTemplate.StringRead, propertyName);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // CodeGenerationTemplate.GenerateStringRead(context, codeBuilder, propertyName);
         }
 
         /// <summary>
@@ -494,7 +516,8 @@ namespace Serializer.Generator
             // Remove nullable annotation if present - MODIFIED VERSION
             var typeName = fullTypeName.Replace("?", "");
 
-            codeBuilder.AppendFormat(CodeGenerationTemplate.NestedObjectRead, fullTypeName, typeName, propertyName);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // CodeGenerationTemplate.GenerateNestedObjectRead(context, codeBuilder, fullTypeName, typeName, propertyName);
         }
 
         /// <summary>
@@ -507,7 +530,8 @@ namespace Serializer.Generator
             // Remove nullable annotation if present
             var elementType = fullElementType.Replace("?", "");
 
-            codeBuilder.AppendFormat(CodeGenerationTemplate.ArrayRead, propertyName, elementType);
+            // TODO: Implement ReadMethodTemplate (Task 11D)
+            // codeBuilder.Append(CodeGenerationTemplate.GenerateArrayRead(propertyName, elementType));
         }
 
         /// <summary>

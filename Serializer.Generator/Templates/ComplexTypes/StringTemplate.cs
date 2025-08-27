@@ -27,12 +27,6 @@ namespace Serializer.Generator.Templates.ComplexTypes
             // Try Roslyn analysis first
             var methodBody = Helpers.ExtractMethodBody<StringTemplate>(compilation, nameof(Read));
 
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<StringTemplate>(nameof(Read));
-            }
-
             return methodBody
                 .Replace("PROPERTY_VALUE", $"{propertyName}Value")
                 .Replace("PROPERTY_KEY", propertyName)
@@ -43,12 +37,6 @@ namespace Serializer.Generator.Templates.ComplexTypes
         {
             // Try Roslyn analysis first
             var methodBody = Helpers.ExtractMethodBody<StringTemplate>(compilation, nameof(Write));
-
-            // If that fails, use the fallback approach
-            if (string.IsNullOrEmpty(methodBody))
-            {
-                methodBody = Helpers.ExtractMethodBodyFromSource<StringTemplate>(nameof(Write));
-            }
 
             return methodBody
                 .Replace("PROPERTY_VALUE", propertyName)

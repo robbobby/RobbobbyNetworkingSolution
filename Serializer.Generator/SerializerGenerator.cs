@@ -1,8 +1,10 @@
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Serializer.Generator.Templates;
 
 namespace Serializer.Generator
 {
@@ -128,10 +130,10 @@ namespace Serializer.Generator
             GenerateKeysClass(codeBuilder, properties);
 
             // Generate Write method
-            GenerateWriteMethod(codeBuilder, properties);
+            GenerateWriteMethod(codeBuilder, properties, semanticModel.Compilation);
 
             // Generate TryRead method
-            GenerateTryReadMethod(codeBuilder, typeName, properties);
+            GenerateTryReadMethod(codeBuilder, typeName, properties, semanticModel.Compilation);
 
             codeBuilder.AppendLine("    }");
 
@@ -182,7 +184,7 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates the Write method with specific wire format
         /// </summary>
-        private static void GenerateWriteMethod(StringBuilder codeBuilder, List<IPropertySymbol> properties)
+        private static void GenerateWriteMethod(StringBuilder codeBuilder, List<IPropertySymbol> properties, Compilation compilation)
         {
             codeBuilder.AppendLine("        public bool Write(Span<byte> buffer, out int bytesWritten)");
             codeBuilder.AppendLine("        {");
@@ -194,7 +196,7 @@ namespace Serializer.Generator
 
             foreach (var property in properties)
             {
-                GenerateWritePropertyCode(codeBuilder, property);
+                GenerateWritePropertyCode(codeBuilder, property, compilation);
             }
 
             codeBuilder.AppendLine("                bytesWritten = used;");
@@ -212,7 +214,7 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates write code for a single property
         /// </summary>
-        private static void GenerateWritePropertyCode(StringBuilder codeBuilder, IPropertySymbol property)
+        private static void GenerateWritePropertyCode(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
         {
             var propertyName = property.Name;
             var propertyType = property.Type;
@@ -230,7 +232,7 @@ namespace Serializer.Generator
             // Write Value with specific encoding based on type
             if (IsSupportedPrimitiveType(propertyType))
             {
-                GenerateWritePrimitiveValue(codeBuilder, property);
+                GenerateWritePrimitiveValue(codeBuilder, property, compilation);
             }
             else if (propertyType.SpecialType == SpecialType.System_String)
             {
@@ -252,15 +254,31 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates code to write a primitive value with length prefix
         /// </summary>
-        private static void GenerateWritePrimitiveValue(StringBuilder codeBuilder, IPropertySymbol property)
+        private static void GenerateWritePrimitiveValue(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
         {
             var propertyName = property.Name;
             var propertyType = property.Type;
 
-            var (writeMethod, length) = GetPrimitiveWriteInfo(propertyType);
-
-            codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort){length}); // Length");
-            codeBuilder.AppendLine($"                    used += RndCodec.{writeMethod}(buffer.Slice(used), {propertyName});");
+            // Use template for Int32 types
+            if (propertyType.SpecialType == SpecialType.System_Int32)
+            {
+                var templateCode = Int32Template.GenerateWriteCode(propertyName, compilation);
+                var lines = templateCode.Split('\n');
+                foreach (var line in lines)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        codeBuilder.AppendLine($"                    {line.Trim()}");
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to original approach for other primitive types
+                var (writeMethod, length) = GetPrimitiveWriteInfo(propertyType);
+                codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort){length}); // Length");
+                codeBuilder.AppendLine($"                    used += RndCodec.{writeMethod}(buffer.Slice(used), {propertyName});");
+            }
         }
 
         /// <summary>
@@ -323,7 +341,7 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates the TryRead method with specific wire format handling
         /// </summary>
-        private static void GenerateTryReadMethod(StringBuilder codeBuilder, string typeName, List<IPropertySymbol> properties)
+        private static void GenerateTryReadMethod(StringBuilder codeBuilder, string typeName, List<IPropertySymbol> properties, Compilation compilation)
         {
             codeBuilder.AppendLine($"        public static bool TryRead(ReadOnlySpan<byte> buffer, ref int consumed, out {typeName} readPacket)");
             codeBuilder.AppendLine("        {");
@@ -347,7 +365,7 @@ namespace Serializer.Generator
             // Generate switch cases for known keys
             foreach (var property in properties)
             {
-                GenerateReadPropertyCase(codeBuilder, property);
+                GenerateReadPropertyCase(codeBuilder, property, compilation);
             }
 
             codeBuilder.AppendLine("                        default:");
@@ -370,7 +388,7 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates a switch case for reading a property
         /// </summary>
-        private static void GenerateReadPropertyCase(StringBuilder codeBuilder, IPropertySymbol property)
+        private static void GenerateReadPropertyCase(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
         {
             var propertyName = property.Name;
             var propertyType = property.Type;
@@ -379,7 +397,7 @@ namespace Serializer.Generator
 
             if (IsSupportedPrimitiveType(propertyType))
             {
-                GenerateReadPrimitiveCase(codeBuilder, property);
+                GenerateReadPrimitiveCase(codeBuilder, property, compilation);
             }
             else if (propertyType.SpecialType == SpecialType.System_String)
             {
@@ -400,15 +418,34 @@ namespace Serializer.Generator
         /// <summary>
         /// Generates read case for primitive types
         /// </summary>
-        private static void GenerateReadPrimitiveCase(StringBuilder codeBuilder, IPropertySymbol property)
+        private static void GenerateReadPrimitiveCase(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
         {
             var propertyName = property.Name;
+
             var propertyType = property.Type;
             var (readMethod, expectedLength) = GetPrimitiveReadInfo(propertyType);
 
             codeBuilder.AppendLine($"                            if (len != {expectedLength}) return false;");
-            codeBuilder.AppendLine($"                            consumed += RndCodec.{readMethod}(buffer.Slice(consumed), out var {propertyName}Value);");
-            codeBuilder.AppendLine($"                            readPacket.{propertyName} = {propertyName}Value;");
+
+            // Use template for Int32 types
+            if (propertyType.SpecialType == SpecialType.System_Int32)
+            {
+                var templateCode = Int32Template.GenerateReadCode(propertyName, compilation);
+                var lines = templateCode.Split('\n');
+                foreach (var line in lines)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        codeBuilder.AppendLine($"                            {line.Trim()}");
+                    }
+                }
+            }
+            else
+            {
+                // Fallback to original approach for other primitive types
+                codeBuilder.AppendLine($"                            consumed += RndCodec.{readMethod}(buffer.Slice(consumed), out var {propertyName}Value);");
+                codeBuilder.AppendLine($"                            readPacket.{propertyName} = {propertyName}Value;");
+            }
         }
 
         /// <summary>

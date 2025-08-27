@@ -2,11 +2,13 @@ namespace Serializer.Generator.Templates
 {
     public static class KeysTemplate
     {
-        public static class Keys
-        {
-            public const ushort PropertyName1 = 1;
-            public const ushort PropertyName2 = 2;
-            public const ushort PropertyName3 = 3;
-        }
+        public const string KeysClass = @"        public static class Keys
+        {{
+{0}
+        }}
+
+";
+
+        public const string KeyConstant = "            public const ushort {0} = {1};";
     }
 }

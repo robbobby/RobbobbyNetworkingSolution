@@ -73,9 +73,6 @@ namespace Serializer.Generator.Tests
             Assert.True(writeSuccess);
             Assert.True(bytesWritten > 0);
 
-            // Verify that we wrote some data
-            Console.WriteLine($"Serialized {bytesWritten} bytes");
-
             // Deserialize
             int consumed = 0;
             bool readSuccess = TestPacket.TryRead(writeBuffer.AsSpan(0, bytesWritten), ref consumed, out var deserialized);

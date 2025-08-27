@@ -4,7 +4,6 @@
 echo "🔍 Running pre-commit checks..."
 
 echo "📝 Formatting C# files..."
-# Safe whitespace across the whole repo (tests included, no analyzer code fixes):
 #if ! dotnet format whitespace --no-restore --verbosity minimal; then
 #    echo "⚠️  Formatting failed"
 #    echo -n "Continue with commit anyway? (y/n): "
@@ -30,7 +29,7 @@ echo "📝 Formatting C# files..."
 
 # Ensure formatting changes are included in this commit
 echo "📦 Staging formatting changes..."
-git add -u
+#git add -u
 
 echo "🔨 Building solution..."
 if ! dotnet build; then

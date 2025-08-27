@@ -1,15 +1,39 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "🚀 Running pre-push validation..."
 
 echo "🔗 Running integration tests..."
-dotnet test --filter "Category=Integration" --verbosity minimal || echo "⚠️  Integration tests failed - continuing anyway"
+if ! dotnet test --filter "Category=Integration" --verbosity minimal; then
+    echo "⚠️  Integration tests failed"
+    echo -n "Continue with push anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Push aborted"
+        exit 1
+    fi
+fi
 
 echo "🔨 Building solution in Release mode..."
-dotnet build --configuration Release || echo "⚠️  Release build failed - continuing anyway"
+if ! dotnet build --configuration Release; then
+    echo "⚠️  Release build failed"
+    echo -n "Continue with push anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Push aborted"
+        exit 1
+    fi
+fi
 
 echo "📦 Validating package builds..."
-dotnet pack --configuration Release --no-build || echo "⚠️  Package build failed - continuing anyway"
+if ! dotnet pack --configuration Release --no-build; then
+    echo "⚠️  Package build failed"
+    echo -n "Continue with push anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Push aborted"
+        exit 1
+    fi
+fi
 
 echo "✅ Pre-push validation completed - proceeding with push"

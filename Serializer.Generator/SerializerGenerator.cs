@@ -426,7 +426,7 @@ namespace Serializer.Generator
 
             if (propertyType.SpecialType == SpecialType.System_Int32)
             {
-                var templateCode = Int32Template.GenerateReadCode(propertyName, compilation);
+                var templateCode = Int32Template.GenerateReadCode(propertyName, "readPacket", compilation);
                 var lines = templateCode.Split('\n');
                 foreach (var line in lines)
                 {

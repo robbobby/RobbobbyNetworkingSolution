@@ -5,12 +5,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serializer.Generator.Templates
 {
-    public abstract class Int32Template
+    public class Int32Template
     {
-        public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, TestPacket testPacket)
+        public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, TestPacket PACKET_NAME)
         {
             consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
-            testPacket.PROPERTY_KEY = PROPERTY_VALUE;
+            PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE;
         }
 
         public static void Write(ref int used, Span<byte> buffer, int value, ushort key)
@@ -22,23 +22,38 @@ namespace Serializer.Generator.Templates
             }
         }
 
-        public static string GenerateReadCode(string propertyName, Compilation compilation = null)
+        public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
         {
+            // Try Roslyn analysis first
             var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Read));
+
+            // If that fails, use the fallback approach
+            if (string.IsNullOrEmpty(methodBody))
+            {
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Read));
+            }
+
             return methodBody
                 .Replace("PROPERTY_VALUE", $"{propertyName}Value")
-                .Replace("PROPERTY_KEY", propertyName);
+                .Replace("PROPERTY_KEY", propertyName)
+                .Replace("PACKET_NAME", packetName);
         }
-
 
         public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
         {
+            // Try Roslyn analysis first
             var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Write));
+
+            // If that fails, use the fallback approach
+            if (string.IsNullOrEmpty(methodBody))
+            {
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Write));
+            }
+
             return methodBody
                 .Replace("value", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
-
     }
 
     public class TestPacket

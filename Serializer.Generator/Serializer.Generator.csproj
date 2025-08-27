@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-        <NoWarn>$(NoWarn);CA1707;CS8618;CS8625;CS8601;CA1034;CA1000;CA1031;CA1822;CA1062;CA1825;CA1305;CA1307;CA1823</NoWarn>
+        <NoWarn>$(NoWarn);CA1303;CA1052;CA1707;CS8618;CS8625;CS8601;CA1034;CA1000;CA1031;CA1822;CA1062;CA1825;CA1305;CA1307;CA1823</NoWarn>
     </PropertyGroup>
 
   <PropertyGroup>

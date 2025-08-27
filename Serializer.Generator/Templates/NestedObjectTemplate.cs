@@ -12,22 +12,22 @@ namespace Serializer.Generator.Templates
             consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var NestedFieldLen);
             if (PlaceHolderReadable.TryRead<T>(buffer.Slice(consumed, NestedFieldLen), ref consumed, out var NestedFieldValue))
             {
-                // PACKET_NAME.PROPERTY_KEY = NestedFieldValue; // This gets replaced during code generation
+                PACKET_NAME.PROPERTY_KEY = NestedFieldValue; // This gets replaced during code generation
             }
             else
             {
-                // PACKET_NAME.PROPERTY_KEY = default(T); // This gets replaced during code generation
+                PACKET_NAME.PROPERTY_KEY = default(T); // This gets replaced during code generation
             }
             consumed += NestedFieldLen;
         }
 
-        public static void Write<T>(ref int used, Span<byte> buffer, T value, ushort key) where T : IRnsPacketField
+        public static void Write<T>(ref int used, Span<byte> buffer, T PROPERTY_VALUE, ushort key) where T : IRnsPacketField
         {
-            if (value != null)
+            if (PROPERTY_VALUE != null)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
                 var nestedBuffer = new byte[1024];
-                if (value.Write(nestedBuffer, out int nestedLength))
+                if (PROPERTY_VALUE.Write(nestedBuffer, out int nestedLength))
                 {
                     used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)nestedLength);
                     nestedBuffer.AsSpan(0, nestedLength).CopyTo(buffer.Slice(used));
@@ -64,7 +64,7 @@ namespace Serializer.Generator.Templates
             }
 
             return methodBody
-                .Replace("value", propertyName)
+                .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
     }

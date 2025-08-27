@@ -252,6 +252,21 @@ namespace Serializer.Generator
         }
 
         /// <summary>
+        /// Applies template code with proper indentation
+        /// </summary>
+        private static void ApplyTemplateCode(StringBuilder codeBuilder, string templateCode, string indentation)
+        {
+            var lines = templateCode.Split('\n');
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    codeBuilder.AppendLine($"{indentation}{line.Trim()}");
+                }
+            }
+        }
+
+        /// <summary>
         /// Generates code to write a primitive value with length prefix
         /// </summary>
         private static void GenerateWritePrimitiveValue(StringBuilder codeBuilder, IPropertySymbol property, Compilation compilation)
@@ -259,34 +274,75 @@ namespace Serializer.Generator
             var propertyName = property.Name;
             var propertyType = property.Type;
 
-            // Use templates for supported types
+            // Use templates for all supported types
             if (propertyType.SpecialType == SpecialType.System_Int32)
             {
                 var templateCode = Int32Template.GenerateWriteCode(propertyName, compilation);
-                var lines = templateCode.Split('\n');
-                foreach (var line in lines)
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        codeBuilder.AppendLine($"                    {line.Trim()}");
-                    }
-                }
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
             }
             else if (propertyType.SpecialType == SpecialType.System_Boolean)
             {
                 var templateCode = BooleanTemplate.GenerateWriteCode(propertyName, compilation);
-                var lines = templateCode.Split('\n');
-                foreach (var line in lines)
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        codeBuilder.AppendLine($"                    {line.Trim()}");
-                    }
-                }
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Byte)
+            {
+                var templateCode = ByteTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_SByte)
+            {
+                var templateCode = SByteTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Int16)
+            {
+                var templateCode = Int16Template.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_UInt16)
+            {
+                var templateCode = UInt16Template.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_UInt32)
+            {
+                var templateCode = UInt32Template.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Int64)
+            {
+                var templateCode = Int64Template.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_UInt64)
+            {
+                var templateCode = UInt64Template.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Single)
+            {
+                var templateCode = SingleTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Double)
+            {
+                var templateCode = DoubleTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (IsGuidType(propertyType))
+            {
+                var templateCode = GuidTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
+            }
+            else if (IsEnumType(propertyType))
+            {
+                var templateCode = EnumTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
             }
             else
             {
-                // Fallback to original approach for other primitive types
+                // Fallback to original approach for unsupported types
                 var (writeMethod, length) = GetPrimitiveWriteInfo(propertyType);
                 codeBuilder.AppendLine($"                    used += RndCodec.{writeMethod}(buffer.Slice(used), {propertyName});");
             }
@@ -439,26 +495,67 @@ namespace Serializer.Generator
             if (propertyType.SpecialType == SpecialType.System_Int32)
             {
                 var templateCode = Int32Template.GenerateReadCode(propertyName, "readPacket", compilation);
-                var lines = templateCode.Split('\n');
-                foreach (var line in lines)
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        codeBuilder.AppendLine($"                            {line.Trim()}");
-                    }
-                }
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
             }
             else if (propertyType.SpecialType == SpecialType.System_Boolean)
             {
                 var templateCode = BooleanTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
-                var lines = templateCode.Split('\n');
-                foreach (var line in lines)
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        codeBuilder.AppendLine($"                            {line.Trim()}");
-                    }
-                }
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Byte)
+            {
+                var templateCode = ByteTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_SByte)
+            {
+                var templateCode = SByteTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Int16)
+            {
+                var templateCode = Int16Template.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_UInt16)
+            {
+                var templateCode = UInt16Template.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_UInt32)
+            {
+                var templateCode = UInt32Template.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Int64)
+            {
+                var templateCode = Int64Template.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_UInt64)
+            {
+                var templateCode = UInt64Template.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Single)
+            {
+                var templateCode = SingleTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Double)
+            {
+                var templateCode = DoubleTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (IsGuidType(propertyType))
+            {
+                var templateCode = GuidTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
+            }
+            else if (IsEnumType(propertyType))
+            {
+                var templateCode = EnumTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                            ");
             }
             else
             {

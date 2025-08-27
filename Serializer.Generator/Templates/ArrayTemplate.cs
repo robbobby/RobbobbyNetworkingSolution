@@ -27,14 +27,14 @@ namespace Serializer.Generator.Templates
             PACKET_NAME.PROPERTY_KEY = ArrayFieldList.ToArray(); // This gets replaced during code generation
         }
 
-        public static void Write<T>(ref int used, Span<byte> buffer, T[] value, ushort key) where T : IRnsPacketField
+        public static void Write<T>(ref int used, Span<byte> buffer, T[] PROPERTY_VALUE, ushort key) where T : IRnsPacketField
         {
-            if (value != null && value.Length > 0)
+            if (PROPERTY_VALUE != null && PROPERTY_VALUE.Length > 0)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
 
                 var ArrayFieldTotalLength = 2;
-                foreach (var item in value)
+                foreach (var item in PROPERTY_VALUE)
                 {
                     var itemBuffer = new byte[1024];
                     if (item.Write(itemBuffer, out int itemLength))
@@ -44,9 +44,9 @@ namespace Serializer.Generator.Templates
                 }
 
                 used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)ArrayFieldTotalLength);
-                used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)value.Length);
+                used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)PROPERTY_VALUE.Length);
 
-                foreach (var item in value)
+                foreach (var item in PROPERTY_VALUE)
                 {
                     var itemBuffer = new byte[1024];
                     if (item.Write(itemBuffer, out int itemLength))
@@ -87,7 +87,7 @@ namespace Serializer.Generator.Templates
             }
 
             return methodBody
-                .Replace("value", propertyName)
+                .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
     }

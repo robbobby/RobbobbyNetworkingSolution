@@ -10,15 +10,15 @@ namespace Serializer.Generator.Templates
         public static void Read<T>(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME) where T : struct, Enum
         {
             consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
-            // PACKET_NAME.PROPERTY_KEY = (T)(object)PROPERTY_VALUE; // This gets replaced during code generation
+            PACKET_NAME.PROPERTY_KEY = (T)(object)PROPERTY_VALUE; // This gets replaced during code generation
         }
 
-        public static void Write<T>(ref int used, Span<byte> buffer, T value, ushort key) where T : struct, Enum
+        public static void Write<T>(ref int used, Span<byte> buffer, T PROPERTY_VALUE, ushort key) where T : struct, Enum
         {
-            if (!value.Equals(default(T)))
+            if (!PROPERTY_VALUE.Equals(default(T)))
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
-                used += RndCodec.WriteInt32(buffer.Slice(used), (int)(object)value);
+                used += RndCodec.WriteInt32(buffer.Slice(used), (int)(object)PROPERTY_VALUE);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Serializer.Generator.Templates
             }
 
             return methodBody
-                .Replace("value", propertyName)
+                .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
     }

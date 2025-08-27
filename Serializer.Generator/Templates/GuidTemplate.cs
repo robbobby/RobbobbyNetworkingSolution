@@ -9,17 +9,17 @@ namespace Serializer.Generator.Templates
     {
         public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME)
         {
-            consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var PROPERTY_VALUE);
+            consumed += RndCodec.ReadGuid(buffer.Slice(consumed), out var PROPERTY_VALUE);
             PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE; // This gets replaced during code generation
         }
 
-        public static void Write(ref int used, Span<byte> buffer, Guid value, ushort key)
+        public static void Write(ref int used, Span<byte> buffer, Guid PROPERTY_VALUE, ushort key)
         {
-            if (value != Guid.Empty)
+            if (PROPERTY_VALUE != Guid.Empty)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
                 used += RndCodec.WriteUInt16(buffer.Slice(used), 16);
-                used += RndCodec.WriteGuid(buffer.Slice(used), value);
+                used += RndCodec.WriteGuid(buffer.Slice(used), PROPERTY_VALUE);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Serializer.Generator.Templates
             }
 
             return methodBody
-                .Replace("value", propertyName)
+                .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
     }

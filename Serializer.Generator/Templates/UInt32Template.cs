@@ -13,12 +13,12 @@ namespace Serializer.Generator.Templates
             PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE; // This gets replaced during code generation
         }
 
-        public static void Write(ref int used, Span<byte> buffer, uint value, ushort key)
+        public static void Write(ref int used, Span<byte> buffer, uint PROPERTY_VALUE, ushort key)
         {
-            if (!(value == 0))
+            if (PROPERTY_VALUE != 0)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
-                used += RndCodec.WriteUInt32(buffer.Slice(used), value);
+                used += RndCodec.WriteUInt32(buffer.Slice(used), PROPERTY_VALUE);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Serializer.Generator.Templates
             }
 
             return methodBody
-                .Replace("value", propertyName)
+                .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
     }

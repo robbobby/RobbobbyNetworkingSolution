@@ -69,16 +69,37 @@ public static class Helpers
                     // For now, return a fallback string based on the method name
                     if (methodName == "Read")
                     {
-                        return @"consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
+                        // Check if this is a boolean template
+                        if (typeof(T).Name == "BooleanTemplate")
+                        {
+                            return @"consumed += RndCodec.ReadBooleanStrict(buffer.Slice(consumed), out var PROPERTY_VALUE);
             readPacket.PROPERTY_KEY = PROPERTY_VALUE;";
+                        }
+                        else
+                        {
+                            return @"consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
+            readPacket.PROPERTY_KEY = PROPERTY_VALUE;";
+                        }
                     }
                     else if (methodName == "Write")
                     {
-                        return @"if (!(value == 0))
+                        // Check if this is a boolean template
+                        if (typeof(T).Name == "BooleanTemplate")
+                        {
+                            return @"if (!(PROPERTY_VALUE == false))
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
-                used += RndCodec.WriteInt32(buffer.Slice(used), value);
+                used += RndCodec.WriteBoolean(buffer.Slice(used), PROPERTY_VALUE);
             }";
+                        }
+                        else
+                        {
+                            return @"if (!(PROPERTY_VALUE == 0))
+            {
+                used += RndCodec.WriteUInt16(buffer.Slice(used), key);
+                used += RndCodec.WriteInt32(buffer.Slice(used), PROPERTY_VALUE);
+            }";
+                        }
                     }
                 }
             }

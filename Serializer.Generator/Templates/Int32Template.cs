@@ -7,7 +7,7 @@ namespace Serializer.Generator.Templates
 {
     public class Int32Template
     {
-        public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, TestPacket PACKET_NAME)
+        public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME)
         {
             consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
             PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE;
@@ -51,13 +51,8 @@ namespace Serializer.Generator.Templates
             }
 
             return methodBody
-                .Replace("value", propertyName)
+                .Replace("PROPERTY_VALUE", propertyName)
                 .Replace("key", $"Keys.{propertyName}");
         }
-    }
-
-    public class TestPacket
-    {
-        public int PROPERTY_KEY { get; set; }
     }
 }

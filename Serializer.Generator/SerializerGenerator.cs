@@ -259,10 +259,22 @@ namespace Serializer.Generator
             var propertyName = property.Name;
             var propertyType = property.Type;
 
-            // Use template for Int32 types
+            // Use templates for supported types
             if (propertyType.SpecialType == SpecialType.System_Int32)
             {
                 var templateCode = Int32Template.GenerateWriteCode(propertyName, compilation);
+                var lines = templateCode.Split('\n');
+                foreach (var line in lines)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        codeBuilder.AppendLine($"                    {line.Trim()}");
+                    }
+                }
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Boolean)
+            {
+                var templateCode = BooleanTemplate.GenerateWriteCode(propertyName, compilation);
                 var lines = templateCode.Split('\n');
                 foreach (var line in lines)
                 {
@@ -427,6 +439,18 @@ namespace Serializer.Generator
             if (propertyType.SpecialType == SpecialType.System_Int32)
             {
                 var templateCode = Int32Template.GenerateReadCode(propertyName, "readPacket", compilation);
+                var lines = templateCode.Split('\n');
+                foreach (var line in lines)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        codeBuilder.AppendLine($"                            {line.Trim()}");
+                    }
+                }
+            }
+            else if (propertyType.SpecialType == SpecialType.System_Boolean)
+            {
+                var templateCode = BooleanTemplate.GenerateReadCode(propertyName, "readPacket", compilation);
                 var lines = templateCode.Split('\n');
                 foreach (var line in lines)
                 {

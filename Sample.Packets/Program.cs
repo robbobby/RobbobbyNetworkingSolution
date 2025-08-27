@@ -23,20 +23,22 @@ namespace Sample.Packets
                 Timestamp = 1234567890
             };
 
-            Console.WriteLine($"  Packet ID: {PlayerMovePacket.RnsKeys.PacketTypeId}");
-            Console.WriteLine($"  Packet Name: {PlayerMovePacket.RnsKeys.PacketName}");
-            Console.WriteLine($"  Packet Version: {PlayerMovePacket.RnsKeys.PacketVersion}");
-            Console.WriteLine($"  Packet Type: {PlayerMovePacket.RnsKeys.PacketType}");
+            Console.WriteLine($"  PlayerName Key: {PlayerMovePacket.Keys.PlayerName}");
+            Console.WriteLine($"  X Key: {PlayerMovePacket.Keys.X}");
+            Console.WriteLine($"  Y Key: {PlayerMovePacket.Keys.Y}");
+            Console.WriteLine($"  Z Key: {PlayerMovePacket.Keys.Z}");
 
-            var moveSize = movePacket.GetSerializedSize();
-            Console.WriteLine($"  Serialized Size: {moveSize} bytes");
             Console.WriteLine($"  Properties: Id={movePacket.Id}, Name='{movePacket.PlayerName}', X={movePacket.X}, Y={movePacket.Y}, Z={movePacket.Z}, Running={movePacket.IsRunning}, Time={movePacket.Timestamp}");
 
             // Test serialization
-            var moveBuffer = new byte[moveSize];
-            var moveBytesWritten = movePacket.Write(moveBuffer);
+            var moveBuffer = new byte[1024]; // Use fixed size buffer since GetSerializedSize doesn't exist
+            bool moveWriteSuccess = movePacket.Write(moveBuffer, out var moveBytesWritten);
+            Console.WriteLine($"  Write Success: {moveWriteSuccess}");
             Console.WriteLine($"  Bytes Written: {moveBytesWritten}");
-            Console.WriteLine($"  Buffer (hex): {BitConverter.ToString(moveBuffer, 0, moveBytesWritten)}");
+            if (moveBytesWritten > 0)
+            {
+                Console.WriteLine($"  Buffer (hex): {BitConverter.ToString(moveBuffer, 0, moveBytesWritten)}");
+            }
 
             // Test ChatMessagePacket
             Console.WriteLine("\n💬 Testing ChatMessagePacket:");
@@ -50,20 +52,22 @@ namespace Sample.Packets
                 Timestamp = 1234567890
             };
 
-            Console.WriteLine($"  Packet ID: {ChatMessagePacket.RnsKeys.PacketTypeId}");
-            Console.WriteLine($"  Packet Name: {ChatMessagePacket.RnsKeys.PacketName}");
-            Console.WriteLine($"  Packet Version: {ChatMessagePacket.RnsKeys.PacketVersion}");
-            Console.WriteLine($"  Packet Type: {ChatMessagePacket.RnsKeys.PacketType}");
+            Console.WriteLine($"  SenderName Key: {ChatMessagePacket.Keys.SenderName}");
+            Console.WriteLine($"  Message Key: {ChatMessagePacket.Keys.Message}");
+            Console.WriteLine($"  Channel Key: {ChatMessagePacket.Keys.Channel}");
+            Console.WriteLine($"  MessageType Key: {ChatMessagePacket.Keys.MessageType}");
 
-            var chatSize = chatPacket.GetSerializedSize();
-            Console.WriteLine($"  Serialized Size: {chatSize} bytes");
             Console.WriteLine($"  Properties: Id={chatPacket.Id}, Sender='{chatPacket.SenderName}', Message='{chatPacket.Message}', Channel='{chatPacket.Channel}', Type={chatPacket.MessageType}, Time={chatPacket.Timestamp}");
 
             // Test serialization
-            var chatBuffer = new byte[chatSize];
-            var chatBytesWritten = chatPacket.Write(chatBuffer);
+            var chatBuffer = new byte[1024]; // Use fixed size buffer since GetSerializedSize doesn't exist
+            bool chatWriteSuccess = chatPacket.Write(chatBuffer, out var chatBytesWritten);
+            Console.WriteLine($"  Write Success: {chatWriteSuccess}");
             Console.WriteLine($"  Bytes Written: {chatBytesWritten}");
-            Console.WriteLine($"  Buffer (hex): {BitConverter.ToString(chatBuffer, 0, chatBytesWritten)}");
+            if (chatBytesWritten > 0)
+            {
+                Console.WriteLine($"  Buffer (hex): {BitConverter.ToString(chatBuffer, 0, chatBytesWritten)}");
+            }
 
             // Test InventoryUpdatePacket
             Console.WriteLine("\n🎒 Testing InventoryUpdatePacket:");
@@ -78,20 +82,22 @@ namespace Sample.Packets
                 SlotIndex = 3
             };
 
-            Console.WriteLine($"  Packet ID: {InventoryUpdatePacket.RnsKeys.PacketTypeId}");
-            Console.WriteLine($"  Packet Name: {InventoryUpdatePacket.RnsKeys.PacketName}");
-            Console.WriteLine($"  Packet Version: {InventoryUpdatePacket.RnsKeys.PacketVersion}");
-            Console.WriteLine($"  Packet Type: {InventoryUpdatePacket.RnsKeys.PacketType}");
+            Console.WriteLine($"  PlayerId Key: {InventoryUpdatePacket.Keys.PlayerId}");
+            Console.WriteLine($"  ItemId Key: {InventoryUpdatePacket.Keys.ItemId}");
+            Console.WriteLine($"  Quantity Key: {InventoryUpdatePacket.Keys.Quantity}");
+            Console.WriteLine($"  IsAdd Key: {InventoryUpdatePacket.Keys.IsAdd}");
 
-            var inventorySize = inventoryPacket.GetSerializedSize();
-            Console.WriteLine($"  Serialized Size: {inventorySize} bytes");
             Console.WriteLine($"  Properties: Id='{inventoryPacket.Id}', Player='{inventoryPacket.PlayerId}', Item={inventoryPacket.ItemId}, Qty={inventoryPacket.Quantity}, Add={inventoryPacket.IsAdd}, Weight={inventoryPacket.ItemWeight}, Slot={inventoryPacket.SlotIndex}");
 
             // Test serialization
-            var inventoryBuffer = new byte[inventorySize];
-            var inventoryBytesWritten = inventoryPacket.Write(inventoryBuffer);
+            var inventoryBuffer = new byte[1024]; // Use fixed size buffer since GetSerializedSize doesn't exist
+            bool inventoryWriteSuccess = inventoryPacket.Write(inventoryBuffer, out var inventoryBytesWritten);
+            Console.WriteLine($"  Write Success: {inventoryWriteSuccess}");
             Console.WriteLine($"  Bytes Written: {inventoryBytesWritten}");
-            Console.WriteLine($"  Buffer (hex): {BitConverter.ToString(inventoryBuffer, 0, inventoryBytesWritten)}");
+            if (inventoryBytesWritten > 0)
+            {
+                Console.WriteLine($"  Buffer (hex): {BitConverter.ToString(inventoryBuffer, 0, inventoryBytesWritten)}");
+            }
 
             Console.WriteLine("\n✅ Source Generator Demo Complete!");
             Console.WriteLine("\n📝 Key-Value Serialization Features:");

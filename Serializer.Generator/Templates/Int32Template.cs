@@ -1,0 +1,63 @@
+using System;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace Serializer.Generator.Templates
+{
+    public class Int32Template
+    {
+        public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, TestPacket PACKET_NAME)
+        {
+            consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
+            PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE;
+        }
+
+        public static void Write(ref int used, Span<byte> buffer, int value, ushort key)
+        {
+            if (!(value == 0))
+            {
+                used += RndCodec.WriteUInt16(buffer.Slice(used), key);
+                used += RndCodec.WriteInt32(buffer.Slice(used), value);
+            }
+        }
+
+        public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
+        {
+            // Try Roslyn analysis first
+            var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Read));
+
+            // If that fails, use the fallback approach
+            if (string.IsNullOrEmpty(methodBody))
+            {
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Read));
+            }
+
+            return methodBody
+                .Replace("PROPERTY_VALUE", $"{propertyName}Value")
+                .Replace("PROPERTY_KEY", propertyName)
+                .Replace("PACKET_NAME", packetName);
+        }
+
+        public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
+        {
+            // Try Roslyn analysis first
+            var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Write));
+
+            // If that fails, use the fallback approach
+            if (string.IsNullOrEmpty(methodBody))
+            {
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Write));
+            }
+
+            return methodBody
+                .Replace("value", propertyName)
+                .Replace("key", $"Keys.{propertyName}");
+        }
+    }
+
+    public class TestPacket
+    {
+        public int PROPERTY_KEY { get; set; }
+    }
+}

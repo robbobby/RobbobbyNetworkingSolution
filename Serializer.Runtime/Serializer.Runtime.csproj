@@ -4,7 +4,7 @@
         <TargetFrameworks>net9.0;netstandard2.1</TargetFrameworks>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    
+
     <ItemGroup>
         <ProjectReference Include="..\Serializer.Abstractions\Serializer.Abstractions.csproj" />
         <PackageReference Include="System.Runtime" Version="4.3.1" />

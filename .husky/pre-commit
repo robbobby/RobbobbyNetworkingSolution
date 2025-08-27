@@ -1,35 +1,57 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "🔍 Running pre-commit checks..."
 
 echo "📝 Formatting C# files..."
-# Safe whitespace across the whole repo (tests included, no analyzer code fixes):
-dotnet format whitespace --no-restore --verbosity minimal
+if ! dotnet format whitespace --no-restore --verbosity minimal; then
+    echo "⚠️  Formatting failed"
+    echo -n "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+fi
+
 # Analyzer fixes only for non-test projects:
 for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
-  dotnet format analyzers "$p" --no-restore --verbosity minimal
+  if ! dotnet format analyzers "$p" --no-restore --verbosity minimal; then
+    echo "⚠️  Analyzer formatting for $p failed"
+    echo -n "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+  fi
 done
 
 # Ensure formatting changes are included in this commit
 echo "📦 Staging formatting changes..."
-git add -u
+#git add -u
 
 echo "🔨 Building solution..."
-dotnet build
-
-# Run unit tests
-echo "🧪 Running unit tests..."
-if out="$(dotnet test --filter "Category=Unit" --verbosity minimal 2>&1)"; then
-    echo "$out"
-    echo "✅ Unit tests completed successfully!"
-else
-    echo "$out"
-    if printf '%s' "$out" | grep -qiE 'No test is available'; then
-        echo "⚠️  No unit tests found - continuing with commit"
-    else
-        echo "⚠️  Unit tests failed - continuing (pre-commit is non-blocking)"
+if ! dotnet build; then
+    echo "⚠️  Build failed"
+    printf "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
     fi
 fi
 
-echo "✅ Pre-commit checks completed successfully!"
+# Run unit tests
+echo "🧪 Running unit tests..."
+if ! dotnet test --filter "Category=Unit" --verbosity minimal; then
+    echo "⚠️  Unit tests failed"
+    printf "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+fi
+
+echo "✅ Pre-commit checks completed - proceeding with commit"

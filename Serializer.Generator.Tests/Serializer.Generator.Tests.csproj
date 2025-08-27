@@ -1,36 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <IsPackable>false</IsPackable>
-        <!-- Disable CA1515 for test projects since test classes need to be public -->
-        <!-- Disable CA1707 for test projects since test methods can have underscores -->
-        <NoWarn>$(NoWarn);CA1515;CA1707</NoWarn>
-        
-        <!-- Enable source generator output for debugging -->
-        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Disable CA1515 for test projects since test classes need to be public -->
+    <!-- Disable CA1707 for test projects since test methods can have underscores -->
+    <NoWarn>$(NoWarn);CA1515;CA1707</NoWarn>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="coverlet.collector" Version="6.0.2"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
-        <PackageReference Include="xunit" Version="2.6.6"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+    <PackageReference Include="xunit" Version="2.6.6"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj" />
-        <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj" />
-        <Analyzer Include="../Serializer.Generator/bin/Debug/netstandard2.0/Serializer.Generator.dll" />
-    </ItemGroup>
-    
-    <!-- Exclude generated files from compilation to avoid duplication -->
-    <ItemGroup>
-        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Serializer.Abstractions/Serializer.Abstractions.csproj"/>
+    <ProjectReference Include="../Serializer.Runtime/Serializer.Runtime.csproj"/>
+    <ProjectReference Include="../Serializer.Generator/Serializer.Generator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer"/>
+    <ProjectReference Include="..\Test.Packets.Models\Test.Packets.Models.csproj" />
+  </ItemGroup>
 
 </Project>

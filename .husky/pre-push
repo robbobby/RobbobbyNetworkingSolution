@@ -1,25 +1,39 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "🚀 Running pre-push validation..."
 
 echo "🔗 Running integration tests..."
-if out="$(dotnet test --filter "Category=Integration" --verbosity minimal 2>&1)"; then
-    echo "$out"
-    echo "✅ Integration tests completed successfully!"
-else
-    echo "$out"
-    if printf '%s' "$out" | grep -qiE 'No test is available'; then
-        echo "⚠️  No integration tests found - continuing with validation"
-    else
-        echo "⚠️  Integration tests failed - continuing (pre-push is non-blocking)"
+if ! dotnet test --filter "Category=Integration" --verbosity minimal; then
+    echo "⚠️  Integration tests failed"
+    printf "Continue with push anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Push aborted"
+        exit 1
     fi
 fi
 
 echo "🔨 Building solution in Release mode..."
-dotnet build --configuration Release
+if ! dotnet build --configuration Release; then
+    echo "⚠️  Release build failed"
+    printf "Continue with push anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Push aborted"
+        exit 1
+    fi
+fi
 
 echo "📦 Validating package builds..."
-dotnet pack --configuration Release --no-build
+if ! dotnet pack --configuration Release --no-build; then
+    echo "⚠️  Package build failed"
+    printf "Continue with push anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Push aborted"
+        exit 1
+    fi
+fi
 
-echo "✅ Pre-push validation completed successfully!"
+echo "✅ Pre-push validation completed - proceeding with push"

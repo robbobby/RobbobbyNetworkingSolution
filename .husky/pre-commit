@@ -4,28 +4,28 @@
 echo "🔍 Running pre-commit checks..."
 
 echo "📝 Formatting C# files..."
-#if ! dotnet format whitespace --no-restore --verbosity minimal; then
-#    echo "⚠️  Formatting failed"
-#    echo -n "Continue with commit anyway? (y/n): "
-#    read -r REPLY < /dev/tty
-#    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
-#        echo "❌ Commit aborted"
-#        exit 1
-#    fi
-#fi
-#
-## Analyzer fixes only for non-test projects:
-#for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
-#  if ! dotnet format analyzers "$p" --no-restore --verbosity minimal; then
-#    echo "⚠️  Analyzer formatting for $p failed"
-#    echo -n "Continue with commit anyway? (y/n): "
-#    read -r REPLY < /dev/tty
-#    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
-#        echo "❌ Commit aborted"
-#        exit 1
-#    fi
-#  fi
-#done
+if ! dotnet format whitespace --no-restore --verbosity minimal; then
+    echo "⚠️  Formatting failed"
+    echo -n "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+fi
+
+# Analyzer fixes only for non-test projects:
+for p in Serializer.Abstractions Serializer.Generator Serializer.Runtime Serializer.Wire Transport.Client Transport.Server Unity.Package; do
+  if ! dotnet format analyzers "$p" --no-restore --verbosity minimal; then
+    echo "⚠️  Analyzer formatting for $p failed"
+    echo -n "Continue with commit anyway? (y/n): "
+    read -r REPLY < /dev/tty
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❌ Commit aborted"
+        exit 1
+    fi
+  fi
+done
 
 # Ensure formatting changes are included in this commit
 echo "📦 Staging formatting changes..."
@@ -34,7 +34,7 @@ echo "📦 Staging formatting changes..."
 echo "🔨 Building solution..."
 if ! dotnet build; then
     echo "⚠️  Build failed"
-    echo -n "Continue with commit anyway? (y/n): "
+    printf "Continue with commit anyway? (y/n): "
     read -r REPLY < /dev/tty
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
         echo "❌ Commit aborted"
@@ -46,7 +46,7 @@ fi
 echo "🧪 Running unit tests..."
 if ! dotnet test --filter "Category=Unit" --verbosity minimal; then
     echo "⚠️  Unit tests failed"
-    echo -n "Continue with commit anyway? (y/n): "
+    printf "Continue with commit anyway? (y/n): "
     read -r REPLY < /dev/tty
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
         echo "❌ Commit aborted"

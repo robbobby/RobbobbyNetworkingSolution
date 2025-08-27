@@ -6,7 +6,7 @@ echo "🚀 Running pre-push validation..."
 echo "🔗 Running integration tests..."
 if ! dotnet test --filter "Category=Integration" --verbosity minimal; then
     echo "⚠️  Integration tests failed"
-    echo -n "Continue with push anyway? (y/n): "
+    printf "Continue with push anyway? (y/n): "
     read -r REPLY < /dev/tty
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
         echo "❌ Push aborted"
@@ -17,7 +17,7 @@ fi
 echo "🔨 Building solution in Release mode..."
 if ! dotnet build --configuration Release; then
     echo "⚠️  Release build failed"
-    echo -n "Continue with push anyway? (y/n): "
+    printf "Continue with push anyway? (y/n): "
     read -r REPLY < /dev/tty
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
         echo "❌ Push aborted"
@@ -28,7 +28,7 @@ fi
 echo "📦 Validating package builds..."
 if ! dotnet pack --configuration Release --no-build; then
     echo "⚠️  Package build failed"
-    echo -n "Continue with push anyway? (y/n): "
+    printf "Continue with push anyway? (y/n): "
     read -r REPLY < /dev/tty
     if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
         echo "❌ Push aborted"

@@ -1,36 +1,34 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Serializer.Generator.Templates
+namespace Serializer.Generator.Templates.PrimitiveTypes
 {
-    public class Int64Template
+    public class Int16Template
     {
         public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME)
         {
-            consumed += RndCodec.ReadInt64(buffer.Slice(consumed), out var PROPERTY_VALUE);
+            consumed += RndCodec.ReadInt16(buffer.Slice(consumed), out var PROPERTY_VALUE);
             PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE; // This gets replaced during code generation
         }
 
-        public static void Write(ref int used, Span<byte> buffer, long PROPERTY_VALUE, ushort key)
+        public static void Write(ref int used, Span<byte> buffer, short PROPERTY_VALUE, ushort key)
         {
             if (PROPERTY_VALUE != 0)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
-                used += RndCodec.WriteInt64(buffer.Slice(used), PROPERTY_VALUE);
+                used += RndCodec.WriteInt16(buffer.Slice(used), PROPERTY_VALUE);
             }
         }
 
         public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
         {
             // Try Roslyn analysis first
-            var methodBody = Helpers.ExtractMethodBody<Int64Template>(compilation, nameof(Read));
+            var methodBody = Helpers.ExtractMethodBody<Int16Template>(compilation, nameof(Read));
 
             // If that fails, use the fallback approach
             if (string.IsNullOrEmpty(methodBody))
             {
-                methodBody = Helpers.ExtractMethodBodyFromSource<Int64Template>(nameof(Read));
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int16Template>(nameof(Read));
             }
 
             return methodBody
@@ -42,12 +40,12 @@ namespace Serializer.Generator.Templates
         public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
         {
             // Try Roslyn analysis first
-            var methodBody = Helpers.ExtractMethodBody<Int64Template>(compilation, nameof(Write));
+            var methodBody = Helpers.ExtractMethodBody<Int16Template>(compilation, nameof(Write));
 
             // If that fails, use the fallback approach
             if (string.IsNullOrEmpty(methodBody))
             {
-                methodBody = Helpers.ExtractMethodBodyFromSource<Int64Template>(nameof(Write));
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int16Template>(nameof(Write));
             }
 
             return methodBody

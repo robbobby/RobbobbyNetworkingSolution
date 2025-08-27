@@ -4,7 +4,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Serializer.Generator.Templates;
+using Serializer.Generator.Templates.ComplexTypes;
+using Serializer.Generator.Templates.PrimitiveTypes;
+using Serializer.Generator.Templates.StructureTypes;
 
 namespace Serializer.Generator
 {
@@ -104,24 +106,17 @@ namespace Serializer.Generator
             var namespaceName = typeSymbol.ContainingNamespace?.ToDisplayString();
             var typeName = typeSymbol.Name;
 
-            // Add using statements
-            codeBuilder.AppendLine("// Generated serialization code");
-            codeBuilder.AppendLine("#nullable enable");
-            codeBuilder.AppendLine("using System;");
-            codeBuilder.AppendLine("using System.Collections.Generic;");
-            codeBuilder.AppendLine("using Serializer.Runtime;");
-            codeBuilder.AppendLine();
+            // Add file header
+            codeBuilder.Append(CodeGenerationTemplate.FileHeader);
 
             // Start namespace
             if (!string.IsNullOrEmpty(namespaceName))
             {
-                codeBuilder.AppendLine($"namespace {namespaceName}");
-                codeBuilder.AppendLine("{");
+                codeBuilder.AppendFormat(CodeGenerationTemplate.NamespaceStart, namespaceName);
             }
 
             // Generate partial class
-            codeBuilder.AppendLine($"    public partial class {typeName}");
-            codeBuilder.AppendLine("    {");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.ClassStart, typeName);
 
             // Get serializable properties (exclude Id property)
             var properties = GetSerializableProperties(typeSymbol, isTopLevel);
@@ -135,12 +130,12 @@ namespace Serializer.Generator
             // Generate TryRead method
             GenerateTryReadMethod(codeBuilder, typeName, properties, semanticModel.Compilation);
 
-            codeBuilder.AppendLine("    }");
+            codeBuilder.Append(CodeGenerationTemplate.ClassEnd);
 
             // Close namespace
             if (!string.IsNullOrEmpty(namespaceName))
             {
-                codeBuilder.AppendLine("}");
+                codeBuilder.Append(CodeGenerationTemplate.NamespaceEnd);
             }
 
             return codeBuilder.ToString();
@@ -167,18 +162,15 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateKeysClass(StringBuilder codeBuilder, List<IPropertySymbol> properties)
         {
-            codeBuilder.AppendLine("        public static class Keys");
-            codeBuilder.AppendLine("        {");
-
+            var keysContent = new StringBuilder();
             ushort keyValue = 1;
             foreach (var property in properties)
             {
-                codeBuilder.AppendLine($"            public const ushort {property.Name} = {keyValue};");
+                keysContent.AppendLine($"            public const ushort {property.Name} = {keyValue};");
                 keyValue++;
             }
 
-            codeBuilder.AppendLine("        }");
-            codeBuilder.AppendLine();
+            codeBuilder.AppendFormat(CodeGenerationTemplate.KeysClass, keysContent.ToString());
         }
 
         /// <summary>
@@ -186,29 +178,14 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateWriteMethod(StringBuilder codeBuilder, List<IPropertySymbol> properties, Compilation compilation)
         {
-            codeBuilder.AppendLine("        public bool Write(Span<byte> buffer, out int bytesWritten)");
-            codeBuilder.AppendLine("        {");
-            codeBuilder.AppendLine("            bytesWritten = 0;");
-            codeBuilder.AppendLine("            var used = 0;");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("            try");
-            codeBuilder.AppendLine("            {");
+            codeBuilder.Append(CodeGenerationTemplate.WriteMethodStart);
 
             foreach (var property in properties)
             {
                 GenerateWritePropertyCode(codeBuilder, property, compilation);
             }
 
-            codeBuilder.AppendLine("                bytesWritten = used;");
-            codeBuilder.AppendLine("                return true;");
-            codeBuilder.AppendLine("            }");
-            codeBuilder.AppendLine("            catch");
-            codeBuilder.AppendLine("            {");
-            codeBuilder.AppendLine("                bytesWritten = 0;");
-            codeBuilder.AppendLine("                return false;");
-            codeBuilder.AppendLine("            }");
-            codeBuilder.AppendLine("        }");
-            codeBuilder.AppendLine();
+            codeBuilder.Append(CodeGenerationTemplate.WriteMethodEnd);
         }
 
         /// <summary>
@@ -219,15 +196,14 @@ namespace Serializer.Generator
             var propertyName = property.Name;
             var propertyType = property.Type;
 
-            codeBuilder.AppendLine($"                // Write {propertyName}");
-
             // Check if property should be omitted
             string defaultCheck = GetDefaultValueCheck(propertyType, propertyName);
-            codeBuilder.AppendLine($"                if (!({defaultCheck}))");
-            codeBuilder.AppendLine("                {");
+            
+            // Start property write block
+            codeBuilder.AppendFormat(CodeGenerationTemplate.PropertyWriteStart, propertyName, defaultCheck);
 
             // Write Key (UInt16)
-            codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), Keys.{propertyName});");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.PropertyKeyWrite, propertyName);
 
             // Write Value with specific encoding based on type
             if (IsSupportedPrimitiveType(propertyType))
@@ -236,7 +212,8 @@ namespace Serializer.Generator
             }
             else if (propertyType.SpecialType == SpecialType.System_String)
             {
-                GenerateWriteStringValue(codeBuilder, propertyName);
+                var templateCode = StringTemplate.GenerateWriteCode(propertyName, compilation);
+                ApplyTemplateCode(codeBuilder, templateCode, "                    ");
             }
             else if (IsIRnsPacketField(propertyType))
             {
@@ -247,8 +224,7 @@ namespace Serializer.Generator
                 GenerateWriteArrayValue(codeBuilder, propertyName);
             }
 
-            codeBuilder.AppendLine("                }");
-            codeBuilder.AppendLine();
+            codeBuilder.Append(CodeGenerationTemplate.PropertyWriteEnd);
         }
 
         /// <summary>
@@ -344,7 +320,7 @@ namespace Serializer.Generator
             {
                 // Fallback to original approach for unsupported types
                 var (writeMethod, length) = GetPrimitiveWriteInfo(propertyType);
-                codeBuilder.AppendLine($"                    used += RndCodec.{writeMethod}(buffer.Slice(used), {propertyName});");
+                codeBuilder.AppendFormat(CodeGenerationTemplate.FallbackPrimitiveWrite, writeMethod, propertyName);
             }
         }
 
@@ -353,11 +329,7 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateWriteStringValue(StringBuilder codeBuilder, string propertyName)
         {
-            // For strings, we need to write a length prefix because RndCodec.WriteString includes its own length
-            // The length should be the total bytes that RndCodec.WriteString will write
-            codeBuilder.AppendLine($"                    var {propertyName}Bytes = System.Text.Encoding.UTF8.GetByteCount({propertyName});");
-            codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)(2 + {propertyName}Bytes)); // Length (2 for string length + string bytes)");
-            codeBuilder.AppendLine($"                    used += RndCodec.WriteString(buffer.Slice(used), {propertyName});");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.StringWrite, propertyName);
         }
 
         /// <summary>
@@ -365,14 +337,7 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateWriteNestedValue(StringBuilder codeBuilder, string propertyName)
         {
-            codeBuilder.AppendLine($"                    // Write nested object as length-prefixed payload");
-            codeBuilder.AppendLine($"                    var nestedBuffer = new byte[1024]; // Temporary buffer");
-            codeBuilder.AppendLine($"                    if ({propertyName}!.Write(nestedBuffer, out var nestedLength))");
-            codeBuilder.AppendLine("                    {");
-            codeBuilder.AppendLine("                        used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)nestedLength);");
-            codeBuilder.AppendLine("                        nestedBuffer.AsSpan(0, nestedLength).CopyTo(buffer.Slice(used));");
-            codeBuilder.AppendLine("                        used += nestedLength;");
-            codeBuilder.AppendLine("                    }");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.NestedObjectWrite, propertyName);
         }
 
         /// <summary>
@@ -380,29 +345,7 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateWriteArrayValue(StringBuilder codeBuilder, string propertyName)
         {
-            // For arrays, we need to calculate the total length first, then write it as a prefix
-            // The length includes: array count (2 bytes) + sum of all item lengths and data
-            codeBuilder.AppendLine($"                    var {propertyName}TotalLength = 2; // Start with array count");
-            codeBuilder.AppendLine($"                    foreach (var item in {propertyName})");
-            codeBuilder.AppendLine("                    {");
-            codeBuilder.AppendLine("                        var itemBuffer = new byte[1024]; // Temporary buffer");
-            codeBuilder.AppendLine("                        if (item.Write(itemBuffer, out var itemLength))");
-            codeBuilder.AppendLine("                        {");
-            codeBuilder.AppendLine($"                            {propertyName}TotalLength += 2 + itemLength; // Item length (2 bytes) + item data");
-            codeBuilder.AppendLine("                        }");
-            codeBuilder.AppendLine("                    }");
-            codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort){propertyName}TotalLength); // Total length prefix");
-            codeBuilder.AppendLine($"                    used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort){propertyName}.Length); // Array count");
-            codeBuilder.AppendLine($"                    foreach (var item in {propertyName})");
-            codeBuilder.AppendLine("                    {");
-            codeBuilder.AppendLine("                        var itemBuffer = new byte[1024]; // Temporary buffer");
-            codeBuilder.AppendLine("                        if (item.Write(itemBuffer, out var itemLength))");
-            codeBuilder.AppendLine("                        {");
-            codeBuilder.AppendLine("                            used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)itemLength);");
-            codeBuilder.AppendLine("                            itemBuffer.AsSpan(0, itemLength).CopyTo(buffer.Slice(used));");
-            codeBuilder.AppendLine("                            used += itemLength;");
-            codeBuilder.AppendLine("                        }");
-            codeBuilder.AppendLine("                    }");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.ArrayWrite, propertyName);
         }
 
         /// <summary>
@@ -410,24 +353,7 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateTryReadMethod(StringBuilder codeBuilder, string typeName, List<IPropertySymbol> properties, Compilation compilation)
         {
-            codeBuilder.AppendLine($"        public static bool TryRead(ReadOnlySpan<byte> buffer, ref int consumed, out {typeName} readPacket)");
-            codeBuilder.AppendLine("        {");
-            codeBuilder.AppendLine($"            readPacket = new {typeName}();");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("            try");
-            codeBuilder.AppendLine("            {");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                while (consumed < buffer.Length)");
-            codeBuilder.AppendLine("                {");
-            codeBuilder.AppendLine("                    if (consumed + 4 > buffer.Length) break; // Need at least key + length");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                    consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var key);");
-            codeBuilder.AppendLine("                    consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var len);");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                    if (consumed + len > buffer.Length) return false; // Malformed");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                    switch (key)");
-            codeBuilder.AppendLine("                    {");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.TryReadMethodStart, typeName);
 
             // Generate switch cases for known keys
             foreach (var property in properties)
@@ -435,21 +361,7 @@ namespace Serializer.Generator
                 GenerateReadPropertyCase(codeBuilder, property, compilation);
             }
 
-            codeBuilder.AppendLine("                        default:");
-            codeBuilder.AppendLine("                            // Unknown key - skip len bytes");
-            codeBuilder.AppendLine("                            consumed += len;");
-            codeBuilder.AppendLine("                            break;");
-            codeBuilder.AppendLine("                    }");
-            codeBuilder.AppendLine("                }");
-            codeBuilder.AppendLine();
-            codeBuilder.AppendLine("                return true;");
-            codeBuilder.AppendLine("            }");
-            codeBuilder.AppendLine("            catch");
-            codeBuilder.AppendLine("            {");
-            codeBuilder.AppendLine("                return false;");
-            codeBuilder.AppendLine("            }");
-            codeBuilder.AppendLine("        }");
-            codeBuilder.AppendLine();
+            codeBuilder.Append(CodeGenerationTemplate.TryReadMethodEnd);
         }
 
         /// <summary>
@@ -460,7 +372,7 @@ namespace Serializer.Generator
             var propertyName = property.Name;
             var propertyType = property.Type;
 
-            codeBuilder.AppendLine($"                        case Keys.{propertyName}:");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.PropertyReadCaseStart, propertyName);
 
             if (IsSupportedPrimitiveType(propertyType))
             {
@@ -479,7 +391,7 @@ namespace Serializer.Generator
                 GenerateReadArrayCase(codeBuilder, property);
             }
 
-            codeBuilder.AppendLine("                            break;");
+            codeBuilder.Append(CodeGenerationTemplate.PropertyReadCaseEnd);
         }
 
         /// <summary>
@@ -560,8 +472,7 @@ namespace Serializer.Generator
             else
             {
                 // Fallback to original approach for other primitive types
-                codeBuilder.AppendLine($"                            consumed += RndCodec.{readMethod}(buffer.Slice(consumed), out var {propertyName}Value);");
-                codeBuilder.AppendLine($"                            readPacket.{propertyName} = {propertyName}Value;");
+                codeBuilder.AppendFormat(CodeGenerationTemplate.FallbackPrimitiveRead, readMethod, propertyName);
             }
         }
 
@@ -570,14 +481,7 @@ namespace Serializer.Generator
         /// </summary>
         private static void GenerateReadStringCase(StringBuilder codeBuilder, string propertyName)
         {
-            // For strings, the length prefix includes the string's own length prefix (2 bytes) plus string bytes
-            // RndCodec.ReadString will read the string's length prefix and string bytes
-            // We need to ensure we don't read beyond the expected length
-            codeBuilder.AppendLine($"                            var {propertyName}Start = consumed;");
-            codeBuilder.AppendLine($"                            consumed += RndCodec.ReadString(buffer.Slice(consumed), out var {propertyName}Value);");
-            codeBuilder.AppendLine($"                            readPacket.{propertyName} = {propertyName}Value;");
-            codeBuilder.AppendLine($"                            // Verify we didn't read beyond the expected length");
-            codeBuilder.AppendLine($"                            if (consumed - {propertyName}Start > len) return false;");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.StringRead, propertyName);
         }
 
         /// <summary>
@@ -590,13 +494,7 @@ namespace Serializer.Generator
             // Remove nullable annotation if present - MODIFIED VERSION
             var typeName = fullTypeName.Replace("?", "");
 
-            // Debug: Add a comment showing what we got
-            codeBuilder.AppendLine($"                            // DEBUG: Original type: {fullTypeName}, After replace: {typeName}");
-            codeBuilder.AppendLine($"                            if ({typeName}.TryRead(buffer.Slice(consumed, len), ref consumed, out var {propertyName}Value))");
-            codeBuilder.AppendLine("                            {");
-            codeBuilder.AppendLine($"                                readPacket.{propertyName} = {propertyName}Value;");
-            codeBuilder.AppendLine("                            }");
-            codeBuilder.AppendLine($"                            consumed += len;");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.NestedObjectRead, fullTypeName, typeName, propertyName);
         }
 
         /// <summary>
@@ -609,19 +507,7 @@ namespace Serializer.Generator
             // Remove nullable annotation if present
             var elementType = fullElementType.Replace("?", "");
 
-            codeBuilder.AppendLine("                            var arrayStart = consumed;");
-            codeBuilder.AppendLine("                            consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var count);");
-            codeBuilder.AppendLine($"                            var {propertyName}List = new List<{elementType}>();");
-            codeBuilder.AppendLine("                            for (int i = 0; i < count; i++)");
-            codeBuilder.AppendLine("                            {");
-            codeBuilder.AppendLine("                                consumed += RndCodec.ReadUInt16(buffer.Slice(consumed), out var itemLen);");
-            codeBuilder.AppendLine($"                                if ({elementType}.TryRead(buffer.Slice(consumed, itemLen), ref consumed, out var item))");
-            codeBuilder.AppendLine("                                {");
-            codeBuilder.AppendLine($"                                    {propertyName}List.Add(item);");
-            codeBuilder.AppendLine("                                }");
-            codeBuilder.AppendLine("                                consumed += itemLen;");
-            codeBuilder.AppendLine("                            }");
-            codeBuilder.AppendLine($"                            readPacket.{propertyName} = {propertyName}List.ToArray();");
+            codeBuilder.AppendFormat(CodeGenerationTemplate.ArrayRead, propertyName, elementType);
         }
 
         /// <summary>

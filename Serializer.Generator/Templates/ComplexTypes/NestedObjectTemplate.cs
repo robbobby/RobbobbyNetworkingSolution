@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Serializer.Generator.Templates
+namespace Serializer.Generator.Templates.ComplexTypes
 {
     public class NestedObjectTemplate
     {

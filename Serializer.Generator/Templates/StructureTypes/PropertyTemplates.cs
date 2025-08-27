@@ -1,4 +1,4 @@
-namespace Serializer.Generator.Templates
+namespace Serializer.Generator.Templates.StructureTypes
 {
     public static class PropertyTemplates
     {

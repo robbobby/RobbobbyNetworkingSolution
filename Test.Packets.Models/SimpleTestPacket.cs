@@ -1,6 +1,6 @@
 using Serializer.Abstractions;
 
-namespace Serializer.Generator.Tests
+namespace Test.Packets.Models
 {
     [RnsSerializable]
     public partial class SimpleTestPacket : IRnsPacket<int>

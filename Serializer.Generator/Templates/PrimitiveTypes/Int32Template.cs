@@ -1,38 +1,34 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Serializer.Generator.Templates
+namespace Serializer.Generator.Templates.PrimitiveTypes
 {
-    public class StringTemplate
+    public class Int32Template
     {
         public static void Read(ref int consumed, ReadOnlySpan<byte> buffer, HereForCompileReasonsPacket PACKET_NAME)
         {
-            consumed += RndCodec.ReadString(buffer.Slice(consumed), out var PROPERTY_VALUE);
+            consumed += RndCodec.ReadInt32(buffer.Slice(consumed), out var PROPERTY_VALUE);
             PACKET_NAME.PROPERTY_KEY = PROPERTY_VALUE; // This gets replaced during code generation
         }
 
-        public static void Write(ref int used, Span<byte> buffer, string PROPERTY_VALUE, ushort key)
+        public static void Write(ref int used, Span<byte> buffer, int PROPERTY_VALUE, ushort key)
         {
-            if (!string.IsNullOrEmpty(PROPERTY_VALUE))
+            if (PROPERTY_VALUE != 0)
             {
                 used += RndCodec.WriteUInt16(buffer.Slice(used), key);
-                var StringFieldBytes = System.Text.Encoding.UTF8.GetByteCount(PROPERTY_VALUE);
-                used += RndCodec.WriteUInt16(buffer.Slice(used), (ushort)(2 + StringFieldBytes));
-                used += RndCodec.WriteString(buffer.Slice(used), PROPERTY_VALUE);
+                used += RndCodec.WriteInt32(buffer.Slice(used), PROPERTY_VALUE);
             }
         }
 
         public static string GenerateReadCode(string propertyName, string packetName, Compilation compilation = null)
         {
             // Try Roslyn analysis first
-            var methodBody = Helpers.ExtractMethodBody<StringTemplate>(compilation, nameof(Read));
+            var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Read));
 
             // If that fails, use the fallback approach
             if (string.IsNullOrEmpty(methodBody))
             {
-                methodBody = Helpers.ExtractMethodBodyFromSource<StringTemplate>(nameof(Read));
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Read));
             }
 
             return methodBody
@@ -44,12 +40,12 @@ namespace Serializer.Generator.Templates
         public static string GenerateWriteCode(string propertyName, Compilation compilation = null)
         {
             // Try Roslyn analysis first
-            var methodBody = Helpers.ExtractMethodBody<StringTemplate>(compilation, nameof(Write));
+            var methodBody = Helpers.ExtractMethodBody<Int32Template>(compilation, nameof(Write));
 
             // If that fails, use the fallback approach
             if (string.IsNullOrEmpty(methodBody))
             {
-                methodBody = Helpers.ExtractMethodBodyFromSource<StringTemplate>(nameof(Write));
+                methodBody = Helpers.ExtractMethodBodyFromSource<Int32Template>(nameof(Write));
             }
 
             return methodBody
